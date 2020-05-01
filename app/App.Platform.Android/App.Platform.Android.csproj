@@ -66,8 +66,11 @@
     <Compile Include="MainActivity.cs" />
     <Compile Include="Clients\ChromeClient.cs" />
     <Compile Include="Clients\WebClient.cs" />
+    <Compile Include="Plugins\BrowserPlugin.cs" />
     <Compile Include="Plugins\CorePlugin.cs" />
+    <Compile Include="Plugins\ResourcePlugin.cs" />
     <Compile Include="Plugins\ShellPlugin.cs" />
+    <Compile Include="Plugins\TracePlugin.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
