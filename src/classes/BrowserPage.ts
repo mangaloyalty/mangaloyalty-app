@@ -48,7 +48,7 @@ export class BrowserPage implements sv.IBrowserPage {
       for (const handler of this._handlers) try {
         handler(new app.BrowserResponse(this._id, url));
       } catch (error) {
-        sv.writeError(error);
+        sv.core.trace.error(error);
       }
     }
   }

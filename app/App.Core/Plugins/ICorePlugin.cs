@@ -5,5 +5,6 @@
         IBrowserPlugin Browser { get; }
         IResourcePlugin Resource { get; }
         IShellPlugin Shell { get; }
+        ITracePlugin Trace { get; }
     }
 }

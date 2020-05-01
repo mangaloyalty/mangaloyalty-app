@@ -3,7 +3,6 @@ module.exports = {
     alias: {
       'express': `${__dirname}/dist/webpack/express`,
       'express-openapi-json': `${__dirname}/dist/webpack/express-openapi-json`,
-      'fs': `${__dirname}/dist/webpack/fs`,
       'fs-extra': `${__dirname}/dist/webpack/fs-extra`,
       'puppeteer-core': `${__dirname}/dist/webpack/puppeteer-core`,
       'socket.io': `${__dirname}/dist/webpack/socket.io`,

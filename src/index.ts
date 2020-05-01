@@ -8,3 +8,4 @@ export * from './contexts/SessionContext';
 export * from './contexts/SocketContext';
 export * from './managers/BrowserManager';
 export * from './managers/ResourceManager';
+export * from './managers/TraceManager';
