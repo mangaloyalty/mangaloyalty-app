@@ -1,27 +1,44 @@
+import * as app from '..';
 import * as sv from 'mangaloyalty-server';
 
 export class ResourceManager implements sv.IResourceManager {
-  moveAsync(_absoluteFromPath: string, _absoluteToPath: string): Promise<void> {
-    throw new Error('TODO');
+  async moveAsync(absoluteFromPath: string, absoluteToPath: string) {
+    const success = await app.native().sendAsync('resource.moveAsync', {absoluteFromPath, absoluteToPath});
+    if (!success) throw missingError();
   }
   
-  async readdirAsync(_absolutePath: string): Promise<string[]> {
-    throw new Error('TODO');
+  async readdirAsync(absolutePath: string) {
+    return await app.native().sendAsync('resource.readdirAsync', {absolutePath}) as string[];
   }
 
-  readFileAsync(_absolutePath: string): Promise<Buffer> {
-    throw new Error('TODO');
+  async readFileAsync(absolutePath: string) {
+    const result = await app.native().sendAsync('resource.readFileAsync', {absolutePath});
+    if (!result) throw missingError();
+    return new Buffer(String(result), 'base64');
   }
 
-  async readJsonAsync<T>(_absolutePath: string): Promise<T> {
-    throw new Error('TODO');
+  async readJsonAsync<T>(absolutePath: string) {
+    const result = await app.native().sendAsync('resource.readJsonAsync', {absolutePath});
+    if (!result) throw missingError();
+    return result as T;
   }
 
-  removeAsync(_absolutePath: string): Promise<void> {
-    throw new Error('TODO');
+  async removeAsync(absolutePath: string) {
+    await app.native().sendAsync('resource.removeAsync', {absolutePath});
   }
 
-  async writeFileAsync<T>(_absolutePath: string, _value: T): Promise<void> {
-    throw new Error('TODO');
+  async writeFileAsync<T>(absolutePath: string, value: T) {
+    if (Buffer.isBuffer(value)) {
+      const buffer = value.toString('base64');
+      await app.native().sendAsync('resource.writeFileAsync', {absolutePath, buffer});
+    } else {
+      await app.native().sendAsync('resource.writeJsonAsync', {absolutePath, value});
+    }
   }
+}
+
+function missingError() {
+  const error = new Error();
+  (error as any).code = 'ENOENT';
+  return error;
 }
