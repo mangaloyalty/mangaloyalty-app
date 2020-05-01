@@ -1,4 +1,7 @@
 export * from './boot';
+export * from './utilities';
+export * from './classes/BrowserPage';
+export * from './classes/BrowserResponse';
 export * from './contexts/LibraryContext';
 export * from './contexts/RemoteContext';
 export * from './contexts/SessionContext';
