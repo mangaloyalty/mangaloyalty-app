@@ -2,20 +2,13 @@
   "author": "Roel van Uden",
   "description": "Your personal manga collection on your server. Your content, your rules.",
   "license": "MIT",
-  "main": "dist",
   "name": "mangaloyalty-app",
   "repository": "git://github.com/mangaloyalty/mangaloyalty-app",
+  "private": true,
   "version": "0.12.0",
-  "bin": {
-    "mangaloyalty-app": "./bin/mangaloyalty-app"
-  },
   "engines": {
     "node": ">= 12.0.0",
     "npm": ">= 6.0.0"
-  },
-  "dependencies": {
-    "compression": "1.7.4",
-    "express": "4.17.1"
   },
   "devDependencies": {
     "@types/hammerjs": "2.0.36",
@@ -48,7 +41,6 @@
     "bundle:ios": "n-copy -d \"app/App.Platform.iOS/Resources\" -s \"public\" \"app.*\"",
     "prepack": "webpack-cli --config webpack.prod.js && npm run -s bundle",
     "prepare": "rimraf dist && tsc",
-    "start": "node server",
     "test": "webpack-dev-server --config webpack.dev.js"
   }
 }

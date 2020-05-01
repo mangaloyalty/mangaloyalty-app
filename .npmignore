@@ -1,4 +1,8 @@
 /.vscode
+/app
+/dist
 /src
-/tsconfig.json
+/typings
 /webpack.*
+/*.json
+/*.tgz
