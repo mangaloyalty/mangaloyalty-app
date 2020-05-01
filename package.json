@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "compression": "1.7.4",
-    "express": "4.17.1"    
+    "express": "4.17.1"
   },
   "devDependencies": {
     "@types/hammerjs": "2.0.36",
@@ -30,6 +30,7 @@
     "mangaloyalty-server": "next",
     "mobx": "5.5.0",
     "mobx-react": "5.2.8",
+    "npm-build-tools": "2.2.5",
     "react": "16.8.6",
     "react-dom": "16.8.6",
     "react-lazyload": "2.6.2",
@@ -42,7 +43,10 @@
     "webpack-dev-server": "3.10.3"
   },
   "scripts": {
-    "prepack": "webpack-cli --config webpack.prod.js",
+    "bundle": "npm run -s bundle:android && npm run -s bundle:ios",
+    "bundle:android": "n-copy -d \"app/App.Platform.Android/Assets\" -s \"public\" \"app.*\"",
+    "bundle:ios": "n-copy -d \"app/App.Platform.iOS/Resources\" -s \"public\" \"app.*\"",
+    "prepack": "webpack-cli --config webpack.prod.js && npm run -s bundle",
     "prepare": "rimraf dist && tsc",
     "start": "node server",
     "test": "webpack-dev-server --config webpack.dev.js"
