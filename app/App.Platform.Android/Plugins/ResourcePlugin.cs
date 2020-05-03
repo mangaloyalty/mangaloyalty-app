@@ -1,31 +1,50 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using App.Core.Models.Plugins;
 using App.Core.Plugins;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace App.Platform.Android.Plugins
 {
     public class ResourcePlugin : IResourcePlugin
     {
-        private string GetAbsolutePath(string absolutePath)
+        #region Abstracts
+
+        private static string GetAbsolutePath(string absolutePath)
         {
             var basePath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
             var relativePath = absolutePath.TrimStart('/');
             return Path.Combine(basePath, relativePath);
         }
 
+        #endregion
+
+        #region Implementation of IResourcePlugin
+
         public Task<bool> MoveAsync(ResourceMoveDataModel model)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var absoluteFromPath = GetAbsolutePath(model.AbsoluteFromPath);
+                var absoluteToPath = GetAbsolutePath(model.AbsoluteToPath);
+                Directory.Move(absoluteFromPath, absoluteToPath);
+                return Task.FromResult(true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return Task.FromResult(false);
+            }
         }
 
-        public Task<string[]> ReaddirAsync(ResourceDataModel model)
+        public Task<IEnumerable<string>> ReaddirAsync(ResourceDataModel model)
         {
             var absolutePath = GetAbsolutePath(model.AbsolutePath);
             Directory.CreateDirectory(absolutePath);
-            return Task.FromResult(Directory.GetFileSystemEntries(absolutePath));
+            return Task.FromResult(Directory.GetFileSystemEntries(absolutePath).Select(Path.GetFileName));
         }
 
         public async Task<string> ReadFileAsync(ResourceDataModel model)
@@ -33,8 +52,8 @@ namespace App.Platform.Android.Plugins
             try
             {
                 var absolutePath = GetAbsolutePath(model.AbsolutePath);
-                var bytes = await File.ReadAllBytesAsync(absolutePath);
-                return Convert.ToBase64String(bytes);
+                var buffer = await File.ReadAllBytesAsync(absolutePath);
+                return Convert.ToBase64String(buffer);
             }
             catch (FileNotFoundException)
             {
@@ -65,26 +84,26 @@ namespace App.Platform.Android.Plugins
             }
             catch (DirectoryNotFoundException)
             {
-                try
-                {
-                    File.Delete(GetAbsolutePath(model.AbsolutePath));
-                    return Task.CompletedTask;
-                }
-                catch (FileNotFoundException)
-                {
-                    return Task.CompletedTask;
-                }
+                File.Delete(GetAbsolutePath(model.AbsolutePath));
+                return Task.CompletedTask;
             }
         }
 
-        public Task WriteFileAsync(ResourceWriteFileDataModel model)
+        public async Task WriteFileAsync(ResourceWriteFileDataModel model)
         {
-            throw new NotImplementedException();
+            var absolutePath = GetAbsolutePath(model.AbsolutePath);
+            var buffer = Convert.FromBase64String(model.Buffer);
+            Directory.CreateDirectory(Path.GetDirectoryName(absolutePath) ?? model.AbsolutePath);
+            await File.WriteAllBytesAsync(absolutePath, buffer);
         }
 
-        public Task WriteJsonAsync(ResourceWriteJsonDataModel model)
+        public async Task WriteJsonAsync(ResourceWriteJsonDataModel model)
         {
-            throw new NotImplementedException();
+            var absolutePath = GetAbsolutePath(model.AbsolutePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(absolutePath) ?? model.AbsolutePath);
+            await File.WriteAllTextAsync(absolutePath, model.Value.ToString(Formatting.Indented));
         }
+
+        #endregion
     }
 }
