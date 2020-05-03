@@ -56,6 +56,7 @@
     <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Android.Export" />
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
@@ -66,10 +67,16 @@
     <Compile Include="MainActivity.cs" />
     <Compile Include="Clients\ChromeClient.cs" />
     <Compile Include="Clients\WebClient.cs" />
+    <Compile Include="Plugins\Browser\BrowserViewScript.cs" />
+    <Compile Include="Plugins\Browser\BrowserResponse.cs" />
+    <Compile Include="Plugins\Browser\BrowserView.cs" />
+    <Compile Include="Utilities\Extensions\HttpWebRequestExtensions.cs" />
+    <Compile Include="Plugins\Browser\BrowserViewClient.cs" />
     <Compile Include="Plugins\BrowserPlugin.cs" />
     <Compile Include="Plugins\CorePlugin.cs" />
     <Compile Include="Plugins\ResourcePlugin.cs" />
     <Compile Include="Plugins\ShellPlugin.cs" />
+    <Compile Include="Utilities\TimeoutTaskCompletionSource.cs" />
     <Compile Include="Plugins\TracePlugin.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
   </ItemGroup>

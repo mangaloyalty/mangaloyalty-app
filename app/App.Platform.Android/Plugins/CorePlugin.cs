@@ -1,5 +1,4 @@
-﻿using Android.App;
-using App.Core.Plugins;
+﻿using App.Core.Plugins;
 
 namespace App.Platform.Android.Plugins
 {
@@ -7,9 +6,9 @@ namespace App.Platform.Android.Plugins
     {
         #region Constructor
 
-        public CorePlugin(Activity activity)
+        public CorePlugin(MainActivity activity)
         {
-            Browser = new BrowserPlugin();
+            Browser = new BrowserPlugin(activity);
             Resource = new ResourcePlugin();
             Shell = new ShellPlugin(activity);
             Trace = new TracePlugin();

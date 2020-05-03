@@ -17,9 +17,8 @@ export class BrowserPage implements sv.IBrowserPage {
     try {
       app.native().addEventListener(eventName, handler);
       return await handlerAsync(page);
-    } catch (error) {
+    } finally {
       app.native().removeEventListener(eventName, handler);
-      throw error;
     }
   }
 

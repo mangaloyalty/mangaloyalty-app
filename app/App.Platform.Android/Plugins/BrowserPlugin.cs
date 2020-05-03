@@ -1,46 +1,76 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using App.Core.Models.Plugins;
 using App.Core.Plugins;
+using App.Platform.Android.Plugins.Browser;
 using Newtonsoft.Json.Linq;
 
 namespace App.Platform.Android.Plugins
 {
     public sealed class BrowserPlugin : IBrowserPlugin
     {
+        private readonly MainActivity _activity;
+        private readonly ConcurrentDictionary<string, BrowserView> _views;
+        private int _previousId;
+
+        #region Constructor
+
+        public BrowserPlugin(MainActivity activity)
+        {
+            _activity = activity;
+            _views = new ConcurrentDictionary<string, BrowserView>();
+        }
+
+        #endregion
+
+        #region Implementation of IBrowserPlugin
+
         public Task BootAsync()
         {
             return Task.CompletedTask;
         }
 
-        public Task<string> CreateAsync()
+        public async Task<string> CreateAsync()
         {
-            throw new NotImplementedException();
+            var viewId = Interlocked.Increment(ref _previousId).ToString();
+            var view = new BrowserView(_activity, viewId);
+            if (!_views.TryAdd(viewId, view)) await view.DestroyAsync();
+            return viewId;
         }
 
-        public Task DestroyAsync(BrowserDataModel model)
+        public async Task DestroyAsync(BrowserDataModel model)
         {
-            throw new NotImplementedException();
+            if (!_views.TryRemove(model.Id, out var view)) return;
+            await view.DestroyAsync();
         }
 
-        public Task<JToken> EvaluateAsync(BrowserEvaluateDataModel model)
+        public async Task<JToken> EvaluateAsync(BrowserEvaluateDataModel model)
         {
-            throw new NotImplementedException();
+            if (!_views.TryGetValue(model.Id, out var view)) return null;
+            return await view.EvaluateAsync(model.Invoke);
         }
 
-        public Task NavigateAsync(BrowserNavigateDataModel model)
+        public async Task NavigateAsync(BrowserNavigateDataModel model)
         {
-            throw new NotImplementedException();
+            if (!_views.TryGetValue(model.Id, out var view)) return;
+            await view.NavigateAsync(model.Url);
         }
 
-        public Task<string> ResponseAsync(BrowserResponseDataModel model)
+        public async Task<string> ResponseAsync(BrowserResponseDataModel model)
         {
-            throw new NotImplementedException();
+            if (!_views.TryGetValue(model.Id, out var view)) return null;
+            var buffer = await view.ResponseAsync(model.Url);
+            return Convert.ToBase64String(buffer);
         }
 
-        public Task WaitForNavigateAsync(BrowserDataModel model)
+        public async Task WaitForNavigateAsync(BrowserDataModel model)
         {
-            throw new NotImplementedException();
+            if (!_views.TryGetValue(model.Id, out var view)) return;
+            await view.WaitForNavigateAsync();
         }
+
+        #endregion
     }
 }
