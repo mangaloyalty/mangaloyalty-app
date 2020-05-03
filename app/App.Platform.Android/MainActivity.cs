@@ -16,6 +16,15 @@ namespace App.Platform.Android
         private Bridge _bridge;
         private WebView _webView;
 
+        #region Methods
+
+        public void DispatchEvent(string eventName, object value)
+        {
+            _bridge.DispatchEvent(eventName, value);
+        }
+
+        #endregion
+
         #region Overrides of Activity
 
         protected override void OnCreate(Bundle savedInstanceState)
