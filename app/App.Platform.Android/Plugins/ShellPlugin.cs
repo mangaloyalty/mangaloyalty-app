@@ -25,6 +25,11 @@ namespace App.Platform.Android.Plugins
             if (view != null) view.Visibility = ViewStates.Gone;
         }
 
+        public void MinimizeApp()
+        {
+            _activity.MoveTaskToBack(true);
+        }
+
         #endregion
     }
 }
