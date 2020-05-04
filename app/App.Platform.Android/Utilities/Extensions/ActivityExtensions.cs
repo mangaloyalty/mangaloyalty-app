@@ -6,22 +6,40 @@ namespace App.Platform.Android.Utilities.Extensions
 {
     public static class ActivityExtensions
     {
-        public static async Task RunOnUiThreadAsync(this Activity activity, Func<Task> handler)
+        #region Abstracts
+
+        private static void Run<T>(Func<T> handler, TaskCompletionSource<T> tcs)
         {
-            var tcs = new TaskCompletionSource<bool>();
-            activity.RunOnUiThread(() => handler().ContinueWith(t => t.IsFaulted
-                ? tcs.TrySetException(t.Exception ?? new Exception())
-                : tcs.TrySetResult(true)));
-            await tcs.Task;
+            try
+            {
+                tcs.TrySetResult(handler());
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+            }
         }
 
-        public static async Task<T> RunOnUiThreadAsync<T>(this Activity activity, Func<Task<T>> handler)
+        #endregion
+
+        #region Statics
+
+        public static async Task InvokeAsync(this Activity activity, Action handler)
+        {
+            await activity.InvokeAsync(() =>
+            {
+                handler();
+                return true;
+            });
+        }
+
+        public static async Task<T> InvokeAsync<T>(this Activity activity, Func<T> handler)
         {
             var tcs = new TaskCompletionSource<T>();
-            activity.RunOnUiThread(() => handler().ContinueWith(t => t.IsFaulted
-                ? tcs.TrySetException(t.Exception ?? new Exception())
-                : tcs.TrySetResult(t.Result)));
+            activity.RunOnUiThread(() => Run(handler, tcs));
             return await tcs.Task;
         }
+
+        #endregion
     }
 }
