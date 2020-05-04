@@ -67,9 +67,11 @@ namespace App.Platform.Android.Plugins.Browser
         {
             try
             {
+                if (request.Method != "GET") return base.ShouldInterceptRequest(view, request);
                 if (_responses.TryGetValue(request.Url.ToString(), out var cache)) return cache.ToWebViewResponse();
                 var http = WebRequest.CreateHttp(request.Url.ToString());
                 http.Method = request.Method;
+                http.CopyCookies(CookieManager.Instance);
                 http.CopyHeaders(request.RequestHeaders);
                 return PersistResponse((HttpWebResponse) http.GetResponse(), request.Url.ToString());
             }
@@ -84,7 +86,7 @@ namespace App.Platform.Android.Plugins.Browser
                 return base.ShouldInterceptRequest(view, request);
             }
         }
-        
+
         #endregion
     }
 }

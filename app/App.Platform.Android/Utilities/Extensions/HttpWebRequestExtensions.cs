@@ -2,11 +2,18 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+using Android.Webkit;
 
 namespace App.Platform.Android.Utilities.Extensions
 {
     public static class HttpWebRequestExtensions
     {
+        public static void CopyCookies(this HttpWebRequest request, CookieManager cookieManager)
+        {
+            var cookie = cookieManager.GetCookie(request.RequestUri.ToString());
+            if (cookie != null) request.Headers[nameof(cookie)] = cookie;
+        }
+
         public static void CopyHeaders(this HttpWebRequest request, IDictionary<string, string> headers)
         {
             foreach(var (key, value) in headers)

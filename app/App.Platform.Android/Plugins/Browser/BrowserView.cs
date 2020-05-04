@@ -35,12 +35,13 @@ namespace App.Platform.Android.Plugins.Browser
             _view.Settings.MixedContentMode = MixedContentHandling.CompatibilityMode;
             _view.Settings.UserAgentString = GetDesktopAgent(_view.Settings.UserAgentString);
             _view.SetWebViewClient(_viewClient);
+            CookieManager.Instance.SetAcceptCookie(true);
         }
 
         #endregion
 
         #region Methods
-        
+
         public Task DestroyAsync()
         {
             _viewScript.Dispose();
