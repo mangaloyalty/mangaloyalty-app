@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using App.Core.Models.Plugins;
 using App.Core.Plugins;
 using App.Platform.Android.Plugins.Browser;
+using App.Platform.Android.Utilities.Extensions;
 using Newtonsoft.Json.Linq;
 
 namespace App.Platform.Android.Plugins
@@ -26,7 +27,7 @@ namespace App.Platform.Android.Plugins
         #endregion
 
         #region Implementation of IBrowserPlugin
-
+        
         public Task BootAsync()
         {
             return Task.CompletedTask;
@@ -34,28 +35,31 @@ namespace App.Platform.Android.Plugins
 
         public async Task<string> CreateAsync()
         {
-            var viewId = Interlocked.Increment(ref _previousId).ToString();
-            var view = new BrowserView(_activity, viewId);
-            if (!_views.TryAdd(viewId, view)) await view.DestroyAsync();
-            return viewId;
+            return await _activity.RunOnUiThreadAsync(async () =>
+            {
+                var viewId = Interlocked.Increment(ref _previousId).ToString();
+                var view = new BrowserView(_activity, viewId);
+                if (!_views.TryAdd(viewId, view)) await view.DestroyAsync();
+                return viewId;
+            });
         }
 
         public async Task DestroyAsync(BrowserDataModel model)
         {
             if (!_views.TryRemove(model.Id, out var view)) return;
-            await view.DestroyAsync();
+            await _activity.RunOnUiThreadAsync(() => view.DestroyAsync());
         }
 
         public async Task<JToken> EvaluateAsync(BrowserEvaluateDataModel model)
         {
             if (!_views.TryGetValue(model.Id, out var view)) return null;
-            return await view.EvaluateAsync(model.Invoke);
+            return await _activity.RunOnUiThreadAsync(() => view.EvaluateAsync(model.Invoke));
         }
 
         public async Task NavigateAsync(BrowserNavigateDataModel model)
         {
             if (!_views.TryGetValue(model.Id, out var view)) return;
-            await view.NavigateAsync(model.Url);
+            await _activity.RunOnUiThreadAsync(() => view.NavigateAsync(model.Url));
         }
 
         public async Task<string> ResponseAsync(BrowserResponseDataModel model)

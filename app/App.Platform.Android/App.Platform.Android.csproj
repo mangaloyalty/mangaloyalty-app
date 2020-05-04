@@ -63,10 +63,9 @@
     <Reference Include="Mono.Android" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Clients\BridgeClient.cs" />
+    <Compile Include="Clients\ViewClient.cs" />
     <Compile Include="MainActivity.cs" />
-    <Compile Include="Clients\ChromeClient.cs" />
-    <Compile Include="Clients\WebClient.cs" />
+    <Compile Include="Utilities\Extensions\ActivityExtensions.cs" />
     <Compile Include="Plugins\Browser\BrowserViewScript.cs" />
     <Compile Include="Plugins\Browser\BrowserResponse.cs" />
     <Compile Include="Plugins\Browser\BrowserView.cs" />
@@ -107,9 +106,6 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\native\oni.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\native\oni.patch.js" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\Icon.png" />

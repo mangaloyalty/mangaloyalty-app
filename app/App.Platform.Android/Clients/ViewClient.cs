@@ -4,15 +4,15 @@ using App.Core.Models;
 
 namespace App.Platform.Android.Clients
 {
-    public sealed class BridgeClient : IClient
+    public sealed class ViewClient : IClient
     {
-        private readonly WebView _webView;
+        private readonly WebView _view;
         
         #region Constructor
 
-        public BridgeClient(WebView webView)
+        public ViewClient(WebView view)
         {
-            _webView = webView;
+            _view = view;
         }
 
         #endregion
@@ -21,7 +21,7 @@ namespace App.Platform.Android.Clients
 
         public void Submit(string functionName, SubmitDataModel model)
         {
-            _webView.Post(() => _webView.EvaluateJavascript($"{functionName}({model.InvokeData});", null));
+            _view.Post(() => _view.EvaluateJavascript($"{functionName}({model.InvokeData});", null));
         }
 
         #endregion

@@ -7,6 +7,7 @@ using Android.Webkit;
 using App.Core;
 using App.Platform.Android.Clients;
 using App.Platform.Android.Plugins;
+using Java.Interop;
 
 namespace App.Platform.Android
 {
@@ -14,13 +15,23 @@ namespace App.Platform.Android
     public sealed class MainActivity : Activity
     {
         private Bridge _bridge;
-        private WebView _webView;
+
+        #region Events
+
+        [Export("request")]
+        [JavascriptInterface]
+        public void ReceiveRequest(string json)
+        {
+            _bridge?.ProcessRequest(json);
+        }
+
+        #endregion
 
         #region Methods
 
-        public void DispatchEvent(string eventName, object value)
+        public void DispatchEvent(string eventName, object value = null)
         {
-            _bridge.DispatchEvent(eventName, value);
+            _bridge?.DispatchEvent(eventName, value);
         }
 
         #endregion
@@ -35,37 +46,24 @@ namespace App.Platform.Android
 
             // Initialize the content.
             SetContentView(Resource.Layout.Main);
-            _webView = FindViewById<WebView>(Resource.Id.webView);
-            _bridge = new Bridge(new BridgeClient(_webView), new CorePlugin(this));
+            var view = FindViewById<WebView>(Resource.Id.webView);
+            _bridge = new Bridge(new ViewClient(view), new CorePlugin(this));
+            view.AddJavascriptInterface(this, "onix");
 
             // Initialize the view.
-            _webView.OverScrollMode = OverScrollMode.Never;
-            _webView.HorizontalScrollBarEnabled = false;
-            _webView.VerticalScrollBarEnabled = false;
-            _webView.Settings.DomStorageEnabled = true;
-            _webView.Settings.JavaScriptEnabled = true;
-            _webView.SetWebChromeClient(new ChromeClient(_bridge));
-            _webView.SetWebViewClient(new WebClient(this));
-            _webView.LoadUrl("file:///android_asset/index.html");
+            view.OverScrollMode = OverScrollMode.Never;
+            view.HorizontalScrollBarEnabled = false;
+            view.VerticalScrollBarEnabled = false;
+            view.Settings.DomStorageEnabled = true;
+            view.Settings.JavaScriptEnabled = true;
+            view.LoadUrl("file:///android_asset/index.html");
         }
 
         public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent e)
         {
             if (keyCode != Keycode.Back) return base.OnKeyDown(keyCode, e);
-            _bridge.DispatchEvent("backbutton");
+            DispatchEvent("backbutton");
             return true;
-        }
-        
-        protected override void OnPause()
-        {
-            base.OnPause();
-            _bridge.UpdateState(false);
-        }
-
-        protected override void OnResume()
-        {
-            base.OnResume();
-            _bridge.UpdateState(true);
         }
 
         #endregion
