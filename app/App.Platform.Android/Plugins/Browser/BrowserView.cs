@@ -1,12 +1,14 @@
 ﻿using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Android.Webkit;
+using App.Platform.Android.Utilities.Extensions;
 using Newtonsoft.Json.Linq;
 
 namespace App.Platform.Android.Plugins.Browser
 {
     public class BrowserView
     {
+        private readonly MainActivity _activity;
         private readonly WebView _view;
         private readonly BrowserViewClient _viewClient;
         private readonly BrowserViewScript _viewScript;
@@ -21,33 +23,47 @@ namespace App.Platform.Android.Plugins.Browser
             return withoutVersion;
         }
 
-        #endregion
-
-        #region Constructor
-        
-        public BrowserView(MainActivity activity, string viewId)
+        private void Initialize()
         {
-            _view = new WebView(activity);
-            _viewClient = new BrowserViewClient(activity, viewId);
-            _viewScript = new BrowserViewScript(_view);
             _view.ClearCache(true);
             _view.Settings.JavaScriptEnabled = true;
             _view.Settings.MixedContentMode = MixedContentHandling.CompatibilityMode;
             _view.Settings.UserAgentString = GetDesktopAgent(_view.Settings.UserAgentString);
             _view.SetWebViewClient(_viewClient);
+        }
+
+        #endregion
+
+        #region Constructor
+        
+        private BrowserView(MainActivity activity, string viewId)
+        {
+            _activity = activity;
+            _view = new WebView(activity);
+            _viewClient = new BrowserViewClient(activity, viewId);
+            _viewScript = new BrowserViewScript(activity, _view);
+            Initialize();
+        }
+
+        public static async Task<BrowserView> CreateAsync(MainActivity activity, string viewId)
+        {
+            var view = await activity.InvokeAsync(() => new BrowserView(activity, viewId));
             CookieManager.Instance.SetAcceptCookie(true);
+            return view;
         }
 
         #endregion
 
         #region Methods
 
-        public Task DestroyAsync()
+        public async Task DestroyAsync()
         {
-            _viewScript.Dispose();
-            _view.Destroy();
-            _view.Dispose();
-            return Task.CompletedTask;
+            await _activity.InvokeAsync(() =>
+            {
+                _viewScript.Dispose();
+                _view.Destroy();
+                _view.Dispose();
+            });
         }
 
         public async Task<JToken> EvaluateAsync(string invoke)
@@ -58,7 +74,7 @@ namespace App.Platform.Android.Plugins.Browser
         public async Task NavigateAsync(string url)
         {
             var task = WaitForNavigateAsync();
-            _view.LoadUrl(url);
+            await _activity.InvokeAsync(() => _view.LoadUrl(url));
             await task;
         }
 
