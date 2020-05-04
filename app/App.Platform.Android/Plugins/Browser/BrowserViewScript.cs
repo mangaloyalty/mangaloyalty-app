@@ -2,8 +2,10 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Webkit;
 using App.Platform.Android.Utilities;
+using App.Platform.Android.Utilities.Extensions;
 using Java.Interop;
 using Newtonsoft.Json.Linq;
 
@@ -11,6 +13,7 @@ namespace App.Platform.Android.Plugins.Browser
 {
     public class BrowserViewScript : Java.Lang.Object
     {
+        private readonly Activity _activity;
         private readonly ConcurrentDictionary<string, TaskCompletionSource<JToken>> _callbacks;
         private readonly string _token;
         private readonly WebView _view;
@@ -18,12 +21,12 @@ namespace App.Platform.Android.Plugins.Browser
 
         #region Constructor
 
-        public BrowserViewScript(WebView view)
+        public BrowserViewScript(Activity activity, WebView view)
         {
+            _activity = activity;
             _callbacks = new ConcurrentDictionary<string, TaskCompletionSource<JToken>>();
             _token = char.ConvertFromUtf32(new Random().Next(97, 122)) + new Random().Next(100, 999999);
-            _view = view;
-            view.AddJavascriptInterface(this, _token);
+            (_view = view).AddJavascriptInterface(this, _token);
         }
         
         #endregion
@@ -38,8 +41,8 @@ namespace App.Platform.Android.Plugins.Browser
             if (!_callbacks.TryAdd(id, tcs)) return null;
 
             // Initialize the script.
-            const string script = "Promise.resolve(($s)()).then(x => $t.resolve($i, JSON.stringify(x)), () => $t.reject($i))";
-            _view.EvaluateJavascript(script.Replace("$i", id).Replace("$s", invoke).Replace("$t", _token), null);
+            var eval = Script.Replace("$i", id).Replace("$s", invoke).Replace("$t", _token);
+            await _activity.InvokeAsync(() => _view.EvaluateJavascript(eval, null));
             return await tcs.Task;
         }
 
@@ -58,6 +61,16 @@ namespace App.Platform.Android.Plugins.Browser
             if (!_callbacks.TryGetValue(id, out var resolver)) return;
             resolver.TrySetCanceled();
         }
+
+        #endregion
+
+        #region Script
+
+        private const string Script = @"Promise.resolve(($s)()).then(x => {
+            $t.resolve($i, JSON.stringify(x));
+        }, () => {
+            $t.reject($i);
+        });";
 
         #endregion
     }
