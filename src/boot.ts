@@ -3,6 +3,18 @@ import * as areas from 'mangaloyalty-client';
 import * as sv from 'mangaloyalty-server';
 import cl = areas.shared;
 
+function androidAttach() {
+  window.oni?.addEventListener('backbutton', () => {
+    if (!cl.core.dialog.isChildVisible && !cl.core.screen.loadCount) {
+      if (cl.core.screen.views.length > 1) {
+        cl.core.screen.leaveAsync();
+      } else {
+        window.oni?.sendAsync('shell.minimizeApp');
+      }
+    }
+  });
+}
+
 export function boot(container: HTMLElement | null) {
   // Initialize the client.
   cl.api.library = new app.LibraryContext();
@@ -16,6 +28,7 @@ export function boot(container: HTMLElement | null) {
   sv.core.trace = new app.TraceManager();
   
   // Initialize the system.
+  androidAttach();
   areas.boot.boot(container);
   sv.bootAsync().then(() => window.oni && window.oni.sendAsync('shell.hideSplashScreen'));
 }
