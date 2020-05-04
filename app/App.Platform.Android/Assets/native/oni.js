@@ -34,7 +34,7 @@ var oni = (function() {
           delete window[callbackName];
           (success ? resolve : reject)(result);
         };
-        console.log("oni:" + JSON.stringify({callbackName: callbackName, eventName: eventName, value: value}));
+        onix.request(JSON.stringify({callbackName, eventName, value}));
       });
     }
   };

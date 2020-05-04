@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -14,19 +13,9 @@ namespace App.Core
     {
         private readonly IClient _client;
         private readonly ICorePlugin _corePlugin;
-        private readonly List<KeyValuePair<string, object>> _queue;
 
         #region Abstracts
-
-        private void EmptyQueue()
-        {
-            while (_queue.Count != 0)
-            {
-                DispatchEvent(_queue[0].Key, _queue[0].Value);
-                _queue.RemoveAt(0);
-            }
-        }
-
+        
         private object ProcessRequest(RequestDataModel model)
         {
             var pieces = model.EventName.ToLowerInvariant().Split('.').ToList();
@@ -88,7 +77,6 @@ namespace App.Core
         {
             _client = client;
             _corePlugin = corePlugin;
-            _queue = new List<KeyValuePair<string, object>>();
         }
 
         #endregion
@@ -97,14 +85,7 @@ namespace App.Core
 
         public void DispatchEvent(string eventName, object value = null)
         {
-            if (IsActive)
-            {
-                _client.Submit("oni.dispatchEvent", new SubmitDataModel(eventName, value));
-            }
-            else
-            {
-                _queue.Add(new KeyValuePair<string, object>(eventName, value));
-            }
+            _client.Submit("oni.dispatchEvent", new SubmitDataModel(eventName, value));
         }
 
         public void ProcessRequest(string json)
@@ -125,27 +106,6 @@ namespace App.Core
                 ProcessResponse(model, response);
             }
         }
-
-        public void UpdateState(bool isActive)
-        {
-            if (isActive)
-            {
-                IsActive = true;
-                EmptyQueue();
-                DispatchEvent("focus");
-            }
-            else
-            {
-                DispatchEvent("blur");
-                IsActive = false;
-            }
-        }
-
-        #endregion
-
-        #region Properties
-
-        public bool IsActive { get; private set; }
 
         #endregion
     }
