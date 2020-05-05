@@ -1,10 +1,10 @@
-﻿using App.Core.Interfaces;
-using App.Core.Models;
+﻿using App.Core.Shared;
+using App.Core.Shared.Models;
 using WebKit;
 
 namespace App.Platform.iOS.Clients
 {
-    public sealed class BridgeClient : IClient
+    public class BridgeClient : IClient
     {
         private readonly WKWebView _webView;
 

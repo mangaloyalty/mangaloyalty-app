@@ -2,8 +2,8 @@
 */bin
 */obj
 /.vs
-/App.Platform.Android/Assets/app.*
+/App.Platform.Android/Assets/*.min.js
 /App.Platform.Android/Assets/libs
-/App.Platform.iOS/Resources/app.*
+/App.Platform.iOS/Resources/*.min.js
 /App.Platform.iOS/Resources/libs
 /packages
