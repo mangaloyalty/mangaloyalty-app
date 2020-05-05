@@ -110,12 +110,13 @@
   <ItemGroup>
     <Content Include="Entitlements.plist" />
     <BundleResource Include="Resources\app.css" />
-    <BundleResource Include="Resources\app.min.js" />
     <BundleResource Include="Resources\index.html" />
     <BundleResource Include="Resources\native\oni.js" />
     <BundleResource Include="Resources\native\oni.patch.ios.js" />
     <BundleResource Include="Resources\native\oni.patch.js" />
     <BundleResource Include="Resources\images\LaunchScreen.png" />
+    <BundleResource Include="Resources\client.min.js" />
+    <BundleResource Include="Resources\server.min.js" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

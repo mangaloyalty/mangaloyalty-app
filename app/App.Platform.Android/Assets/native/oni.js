@@ -5,24 +5,23 @@ var oni = (function() {
   return {
     addEventListener: function(eventName, handler) {
       if (eventHandlers[eventName]) {
-        eventHandlers[eventName].push(handler);
+	    throw new Error();
       } else {
-        eventHandlers[eventName] = [handler];
+        eventHandlers[eventName] = handler;
       }
     },
 
-    dispatchEvent: function(eventName, value) {
+    dispatchAsync: function(eventName, value) {
       if (eventHandlers[eventName]) {
-        for (var i = 0; i < eventHandlers[eventName].length; i++) {
-          eventHandlers[eventName][i](value);
-        }
+	    return eventHandlers[eventName](value);
+      } else {
+	    return undefined;
       }
     },
 
-    removeEventListener: function(eventName, handler) {
+    removeEventListener: function(eventName) {
       if (eventHandlers[eventName]) {
-        var index = eventHandlers[eventName].indexOf(handler);
-        if (index !== -1) eventHandlers[eventName].splice(index, 1);
+        delete eventHandlers[eventName];
       }
     },
 

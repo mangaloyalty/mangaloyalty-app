@@ -5,7 +5,7 @@ using WebKit;
 
 namespace App.Platform.iOS.Clients
 {
-    public sealed class ViewClient : UIViewController, IWKNavigationDelegate, IWKUIDelegate
+    public class ViewClient : UIViewController, IWKNavigationDelegate, IWKUIDelegate
     {
         private readonly WKWebView _webView;
         private bool _hasAppeared;

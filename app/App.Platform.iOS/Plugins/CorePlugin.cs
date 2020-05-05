@@ -1,9 +1,11 @@
-﻿using App.Core.Plugins;
+﻿using App.Core.Client;
+using App.Core.Server;
 using App.Platform.iOS.Clients;
+using IBasePlugin = App.Core.Client.IBasePlugin;
 
 namespace App.Platform.iOS.Plugins
 {
-    public sealed class CorePlugin : ICorePlugin
+    public class CorePlugin : IBasePlugin
     {
         #region Constructor
 
