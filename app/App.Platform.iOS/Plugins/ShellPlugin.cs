@@ -1,9 +1,9 @@
-﻿using App.Core.Plugins;
+﻿using App.Core.Client;
 using App.Platform.iOS.Clients;
 
 namespace App.Platform.iOS.Plugins
 {
-    public sealed class ShellPlugin : IShellPlugin
+    public class ShellPlugin : IShellPlugin
     {
         private readonly ViewClient _view;
 

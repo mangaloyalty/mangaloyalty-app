@@ -8,7 +8,7 @@ using WebKit;
 namespace App.Platform.iOS
 {
     [Register("AppDelegate")]
-    public sealed class AppDelegate : UIApplicationDelegate
+    public class AppDelegate : UIApplicationDelegate
     {
         private Bridge _bridge;
 

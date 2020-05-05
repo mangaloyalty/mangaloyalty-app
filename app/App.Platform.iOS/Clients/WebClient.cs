@@ -4,7 +4,7 @@ using WebKit;
 
 namespace App.Platform.iOS.Clients
 {
-    public sealed class WebClient : WKScriptMessageHandler
+    public class WebClient : WKScriptMessageHandler
     {
         private Bridge _bridge;
 
