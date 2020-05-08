@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Webkit;
 using App.Core.Shared;
 using App.Core.Shared.Extensions;
@@ -13,8 +14,8 @@ namespace App.Platform.Android
 {
     public class Callback : Java.Lang.Object, ICallback
     {
-        private readonly Controller _controller;
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<JToken>> _receivers;
+        private readonly Context _context;
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<JToken>> _receiverTcs;
         private readonly string _token;
         private readonly WebView _view;
         private int _previousId;
@@ -30,10 +31,10 @@ namespace App.Platform.Android
 
         #region Constructor
 
-        public Callback(Controller controller, WebView view)
+        public Callback(Context context, WebView view)
         {
-            _controller = controller;
-            _receivers = new ConcurrentDictionary<string, TaskCompletionSource<JToken>>();
+            _context = context;
+            _receiverTcs = new ConcurrentDictionary<string, TaskCompletionSource<JToken>>();
             _token = char.ConvertFromUtf32(new Random().Next(97, 122)) + new Random().Next(100, 999999);
             _view = view;
             Initialize();
@@ -47,16 +48,16 @@ namespace App.Platform.Android
         [JavascriptInterface]
         public void ReceiveResolve(string id, string json)
         {
-            if (!_receivers.TryRemove(id, out var receiver)) return;
-            receiver.TrySetResult(json.ParseJson());
+            if (!_receiverTcs.TryRemove(id, out var receiverTcs)) return;
+            receiverTcs.TrySetResult(json.ParseJson());
         }
 
         [Export("reject")]
         [JavascriptInterface]
         public void ReceiveReject(string id)
         {
-            if (!_receivers.TryRemove(id, out var receiver)) return;
-            receiver.TrySetCanceled();
+            if (!_receiverTcs.TryRemove(id, out var receiverTcs)) return;
+            receiverTcs.TrySetCanceled();
         }
 
         #endregion
@@ -68,11 +69,11 @@ namespace App.Platform.Android
             // Initialize the identifier.
             var id = Interlocked.Increment(ref _previousId).ToString();
             var tcs = new TimeoutTaskCompletionSource<JToken>();
-            if (!_receivers.TryAdd(id, tcs)) return null;
+            if (!_receiverTcs.TryAdd(id, tcs)) return null;
 
             // Initialize the script.
-            var runnable = Script.Replace("$id", id).Replace("$script", script).Replace("$token", _token);
-            await _controller.RunAsync(() => _view.EvaluateJavascript(runnable, null));
+            var run = Script.Replace("$id", id).Replace("$script", script).Replace("$token", _token);
+            await _context.RunAsync(() => _view.EvaluateJavascript(run, null));
             return await tcs.Task;
         }
 

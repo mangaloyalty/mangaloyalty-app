@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Android.Content;
 using App.Core.Server;
 
 namespace App.Platform.Android.Server.Plugins
@@ -7,9 +8,9 @@ namespace App.Platform.Android.Server.Plugins
     {
         #region Constructor
 
-        public BasePlugin(TaskCompletionSource<bool> bootTcs, Controller controller, ServerCore core)
+        public BasePlugin(Context context, ServerCore core, TaskCompletionSource<bool> initTcs)
         {
-            Browser = new BrowserPlugin(bootTcs, controller, core);
+            Browser = new BrowserPlugin(context, core, initTcs);
             Resource = new ResourcePlugin();
             Socket = new SocketPlugin(core);
             Trace = new TracePlugin();

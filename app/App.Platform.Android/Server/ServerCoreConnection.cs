@@ -10,13 +10,13 @@ namespace App.Platform.Android.Server
 {
     public class ServerCoreConnection : Java.Lang.Object, IServerCore, IServiceConnection
     {
-        private readonly TaskCompletionSource<ServerCoreBinder> _binder;
+        private readonly TaskCompletionSource<ServerCoreBinder> _binderTcs;
 
         #region Constructor
 
         private ServerCoreConnection()
         {
-            _binder = new TimeoutTaskCompletionSource<ServerCoreBinder>();
+            _binderTcs = new TimeoutTaskCompletionSource<ServerCoreBinder>();
         }
 
         public static ServerCoreConnection Create(Context context)
@@ -32,13 +32,13 @@ namespace App.Platform.Android.Server
 
         public async Task ListenAsync(IServerCoreListener listener)
         {
-            var binder = await _binder.Task;
+            var binder = await _binderTcs.Task;
             await binder.ListenAsync(listener);
         }
 
         public async Task<JToken> RequestAsync(JToken model)
         {
-            var binder = await _binder.Task;
+            var binder = await _binderTcs.Task;
             return await binder.RequestAsync(model);
         }
 
@@ -48,7 +48,7 @@ namespace App.Platform.Android.Server
 
         public void OnServiceConnected(ComponentName name, IBinder service)
         {
-            _binder.TrySetResult((ServerCoreBinder) service);
+            _binderTcs.TrySetResult((ServerCoreBinder) service);
         }
 
         public void OnServiceDisconnected(ComponentName name)

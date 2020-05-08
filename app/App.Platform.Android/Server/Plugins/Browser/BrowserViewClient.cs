@@ -10,7 +10,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
     public class BrowserViewClient : WebViewClient
     {
         private readonly ServerCore _core;
-        private readonly ConcurrentBag<TaskCompletionSource<bool>> _navigations;
+        private readonly ConcurrentBag<TaskCompletionSource<bool>> _navigationTcs;
         private readonly ConcurrentDictionary<string, BrowserResponse> _results;
         private readonly string _viewId;
 
@@ -30,7 +30,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
         public BrowserViewClient(ServerCore core, string viewId)
         {
             _core = core;
-            _navigations = new ConcurrentBag<TaskCompletionSource<bool>>();
+            _navigationTcs = new ConcurrentBag<TaskCompletionSource<bool>>();
             _results = new ConcurrentDictionary<string, BrowserResponse>();
             _viewId = viewId;
         }
@@ -47,7 +47,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
         public async Task WaitForNavigateAsync()
         {
             var tcs = new TimeoutTaskCompletionSource<bool>();
-            _navigations.Add(tcs);
+            _navigationTcs.Add(tcs);
             await tcs.Task;
         }
 
@@ -57,9 +57,9 @@ namespace App.Platform.Android.Server.Plugins.Browser
         
         public override void OnPageCommitVisible(WebView view, string url)
         {
-            while (_navigations.TryTake(out var navigation))
+            while (_navigationTcs.TryTake(out var navigationTcs))
             {
-                navigation.TrySetResult(true);
+                navigationTcs.TrySetResult(true);
             }
         }
 

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Android.Content;
 using App.Core.Server;
 using App.Core.Server.Models;
 using App.Platform.Android.Server.Plugins.Browser;
@@ -11,19 +12,19 @@ namespace App.Platform.Android.Server.Plugins
 {
     public class BrowserPlugin : IBrowserPlugin
     {
-        private readonly TaskCompletionSource<bool> _bootTcs;
-        private readonly Controller _controller;
+        private readonly Context _context;
         private readonly ServerCore _core;
+        private readonly TaskCompletionSource<bool> _initTcs;
         private readonly ConcurrentDictionary<string, BrowserView> _views;
         private int _previousId;
 
         #region Constructor
 
-        public BrowserPlugin(TaskCompletionSource<bool> bootTcs, Controller controller, ServerCore core)
+        public BrowserPlugin(Context context, ServerCore core, TaskCompletionSource<bool> initTcs)
         {
-            _bootTcs = bootTcs;
-            _controller = controller;
+            _context = context;
             _core = core;
+            _initTcs = initTcs;
             _views = new ConcurrentDictionary<string, BrowserView>();
         }
 
@@ -33,14 +34,14 @@ namespace App.Platform.Android.Server.Plugins
         
         public Task BootAsync()
         {
-            _bootTcs.TrySetResult(true);
+            _initTcs.TrySetResult(true);
             return Task.CompletedTask;
         }
 
         public async Task<string> CreateAsync()
         {
             var viewId = Interlocked.Increment(ref _previousId).ToString();
-            var view = await BrowserView.CreateAsync(_controller, _core, viewId);
+            var view = await BrowserView.CreateAsync(_context, _core, viewId);
             if (_views.TryAdd(viewId, view)) return viewId;
             await view.DestroyAsync();
             throw new Exception();
