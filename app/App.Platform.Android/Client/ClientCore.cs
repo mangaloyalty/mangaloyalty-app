@@ -9,31 +9,29 @@ using Newtonsoft.Json.Linq;
 
 namespace App.Platform.Android.Client
 {
-    // TODO: Automations on unmetered?
     public class ClientCore : Java.Lang.Object
     {
         private readonly Bridge _bridge;
-        private readonly WebView _view;
+        private readonly Callback _callback;
 
         #region Constructor
 
-        private void Initialize()
+        private void Initialize(WebView view)
         {
-            _view.AddJavascriptInterface(this, "onix");
-            _view.OverScrollMode = OverScrollMode.Never;
-            _view.HorizontalScrollBarEnabled = false;
-            _view.VerticalScrollBarEnabled = false;
-            _view.Settings.DomStorageEnabled = true;
-            _view.Settings.JavaScriptEnabled = true;
-            _view.LoadUrl("file:///android_asset/client.html");
+            view.AddJavascriptInterface(this, "onix");
+            view.OverScrollMode = OverScrollMode.Never;
+            view.HorizontalScrollBarEnabled = false;
+            view.VerticalScrollBarEnabled = false;
+            view.Settings.DomStorageEnabled = true;
+            view.Settings.JavaScriptEnabled = true;
+            view.LoadUrl("file:///android_asset/client.html");
         }
 
         private ClientCore(Activity activity, IServerCore server, WebView view)
         {
-            var controller = new Controller(activity); // TODO: Weird use of controller in client.
-            _bridge = new Bridge(new Callback(controller, view), new BasePlugin(activity, server));
-            _view = view;
-            Initialize();
+            _callback = new Callback(activity, view);
+            _bridge = new Bridge(_callback, new BasePlugin(activity, server));
+            Initialize(view);
         }
 
         public static async Task<ClientCore> CreateAsync(Activity activity, IServerCore server, WebView view)
@@ -54,7 +52,7 @@ namespace App.Platform.Android.Client
             _ = _bridge?.RequestAsync(json);
         }
 
-        public void NavigateBack()
+        public void OnBackButton()
         {
             _ = _bridge.EventAsync("backbutton");
         }
@@ -62,6 +60,16 @@ namespace App.Platform.Android.Client
         public async Task SocketAsync(JToken model)
         {
             await _bridge.EventAsync("socket", model);
+        }
+
+        #endregion
+
+        #region Overrides of Object
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!disposing) return;
+            _callback.Dispose();
         }
 
         #endregion

@@ -6,11 +6,8 @@ using App.Core.Shared;
 
 namespace App.Platform.Android
 {
-    public class Controller
+    public static class Utilities
     {
-        private readonly Context _context;
-        private readonly Handler _handler;
-
         #region Abstracts
 
         private static void Run<T>(Func<T> handler, TaskCompletionSource<T> tcs)
@@ -26,42 +23,24 @@ namespace App.Platform.Android
         }
 
         #endregion
+        
+        #region Statics
 
-        #region Constructor
-
-        public Controller(Context context)
+        public static async Task RunAsync(this Context context, Action action)
         {
-            _context = context;
-            _handler = new Handler();
-        }
-
-        #endregion
-
-        #region Methods
-
-        public async Task RunAsync(Action action)
-        {
-            await RunAsync(() =>
+            await context.RunAsync(() =>
             {
                 action();
                 return true;
             });
         }
 
-        public async Task<T> RunAsync<T>(Func<T> func)
+        public static async Task<T> RunAsync<T>(this Context context, Func<T> func)
         {
+            using var handler = new Handler(context.MainLooper);
             var tcs = new TimeoutTaskCompletionSource<T>();
-            _handler.Post(() => Run(func, tcs));
+            handler.Post(() => Run(func, tcs));
             return await tcs.Task;
-        }
-
-        #endregion
-
-        #region Statics
-        
-        public static implicit operator Context(Controller controller)
-        {
-            return controller._context;
         }
 
         #endregion
