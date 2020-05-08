@@ -1,6 +1,7 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.OS;
+using App.Platform.Android.Server.Interfaces;
 using App.Platform.Android.Shared;
 using App.Platform.Android.Utilities;
 
@@ -9,11 +10,13 @@ namespace App.Platform.Android.Server
     [Service]
     public class ServerService : Service
     {
+        private Controller _controller;
+        private IServerCore _core;
         private bool _isActive;
 
         #region Abstracts
 
-        private void CreateChannel()
+        private void BindChannel()
         {
             if (Build.VERSION.SdkInt < BuildVersionCodes.O) return;
             var channel = new NotificationChannel(Constants.ChannelServiceKey, Constants.ChannelServiceName, NotificationImportance.Default);
@@ -22,7 +25,7 @@ namespace App.Platform.Android.Server
             NotificationManager.FromContext(this).CreateNotificationChannel(channel);
         }
 
-        private void CreateForeground()
+        private void BindForeground()
         {
             if (Build.VERSION.SdkInt < BuildVersionCodes.O) return;
             StartForeground(Constants.NotificationId, new Notification.Builder(this, Constants.ChannelServiceKey)
@@ -31,16 +34,7 @@ namespace App.Platform.Android.Server
                 .Build());
         }
         
-        private void Start()
-        {
-            var controller = new Controller(this);
-            var core = new ServerCore(controller);
-            CreateChannel();
-            CreateForeground();
-            RegisterReceiver(new ServerReceiver(core), new IntentFilter(nameof(ServerReceiver)));
-        }
-
-        private void Stop()
+        private void UnbindForeground()
         {
             NotificationManager.FromContext(this).Notify(Constants.NotificationId, new Notification.Builder(this, Constants.ChannelServiceKey)
                 .SetContentText(Constants.NotificationKilled)
@@ -70,21 +64,28 @@ namespace App.Platform.Android.Server
 
         public override IBinder OnBind(Intent intent)
         {
-            return null;
+            return new ServerCoreBinder(_core);
         }
-        
+
+        public override void OnCreate()
+        {
+            _controller = new Controller(this);
+            _core = new ServerCore(_controller);
+        }
+
         public override void OnDestroy()
         {
             if (!_isActive) return;
             _isActive = false;
-            Stop();
+            UnbindForeground();
         }
 
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
             if (_isActive) return StartCommandResult.Sticky;
             _isActive = true;
-            Start();
+            BindChannel();
+            BindForeground();
             return StartCommandResult.Sticky;
         }
 

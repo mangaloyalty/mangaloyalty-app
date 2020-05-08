@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Android.Webkit;
 
 namespace App.Platform.Android.Server.Plugins.Browser
@@ -19,11 +20,11 @@ namespace App.Platform.Android.Server.Plugins.Browser
             _response = response;
         }
         
-        public static BrowserResponse Create(HttpWebResponse response)
+        public static async Task<BrowserResponse> CreateAsync(HttpWebResponse response)
         {
-            using var memoryStream = new MemoryStream();
-            using var responseStream = response.GetResponseStream();
-            responseStream?.CopyTo(memoryStream);
+            await using var memoryStream = new MemoryStream();
+            await using var responseStream = response.GetResponseStream();
+            await (responseStream?.CopyToAsync(memoryStream) ?? Task.CompletedTask);
             return new BrowserResponse(memoryStream.ToArray(), response);
         }
 
