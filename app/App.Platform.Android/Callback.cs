@@ -47,7 +47,7 @@ namespace App.Platform.Android
         [JavascriptInterface]
         public void ReceiveResolve(string id, string json)
         {
-            if (!_receivers.TryGetValue(id, out var receiver)) return;
+            if (!_receivers.TryRemove(id, out var receiver)) return;
             receiver.TrySetResult(json.ParseJson());
         }
 
@@ -55,7 +55,7 @@ namespace App.Platform.Android
         [JavascriptInterface]
         public void ReceiveReject(string id)
         {
-            if (!_receivers.TryGetValue(id, out var receiver)) return;
+            if (!_receivers.TryRemove(id, out var receiver)) return;
             receiver.TrySetCanceled();
         }
 

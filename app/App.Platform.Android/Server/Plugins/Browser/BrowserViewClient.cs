@@ -54,7 +54,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
         #endregion
 
         #region Overrides of WebViewClient
-
+        
         public override void OnPageCommitVisible(WebView view, string url)
         {
             while (_navigations.TryTake(out var navigation))
@@ -87,6 +87,12 @@ namespace App.Platform.Android.Server.Plugins.Browser
             {
                 return base.ShouldInterceptRequest(view, request);
             }
+        }
+
+        public override bool ShouldOverrideUrlLoading(WebView view, IWebResourceRequest request)
+        {
+            _results.TryRemove(request.Url.ToString(), out _);
+            return false;
         }
 
         #endregion
