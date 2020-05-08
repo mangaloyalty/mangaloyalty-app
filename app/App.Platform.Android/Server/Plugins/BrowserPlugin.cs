@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using App.Core.Server;
 using App.Core.Server.Models;
+using App.Platform.Android.Server.Interfaces;
 using App.Platform.Android.Server.Plugins.Browser;
 using App.Platform.Android.Shared;
 using Newtonsoft.Json.Linq;
@@ -13,14 +14,16 @@ namespace App.Platform.Android.Server.Plugins
     public class BrowserPlugin : IBrowserPlugin
     {
         private readonly Controller _controller;
+        private readonly IServerCore _core;
         private readonly ConcurrentDictionary<string, BrowserView> _views;
         private int _previousId;
 
         #region Constructor
 
-        public BrowserPlugin(Controller controller)
+        public BrowserPlugin(Controller controller, IServerCore core)
         {
             _controller = controller;
+            _core = core;
             _views = new ConcurrentDictionary<string, BrowserView>();
         }
 
@@ -36,9 +39,10 @@ namespace App.Platform.Android.Server.Plugins
         public async Task<string> CreateAsync()
         {
             var viewId = Interlocked.Increment(ref _previousId).ToString();
-            var view = await BrowserView.CreateAsync(_controller, viewId);
-            if (!_views.TryAdd(viewId, view)) await view.DestroyAsync();
-            return viewId;
+            var view = await BrowserView.CreateAsync(_controller, _core, viewId);
+            if (_views.TryAdd(viewId, view)) return viewId;
+            await view.DestroyAsync();
+            throw new Exception();
         }
 
         public async Task DestroyAsync(BrowserDataModel model)

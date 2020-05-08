@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace App.Core.Shared
+namespace App.Core.Shared.Interfaces
 {
     public interface ICallback
     {

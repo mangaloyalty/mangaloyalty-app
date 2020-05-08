@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using App.Core.Server;
 using App.Core.Server.Models;
+using App.Core.Shared.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -67,7 +68,7 @@ namespace App.Platform.Android.Server.Plugins
             {
                 var absolutePath = GetAbsolutePath(model.AbsolutePath);
                 var text = await File.ReadAllTextAsync(absolutePath);
-                return JToken.Parse(text);
+                return text.ParseJson();
             }
             catch (FileNotFoundException)
             {

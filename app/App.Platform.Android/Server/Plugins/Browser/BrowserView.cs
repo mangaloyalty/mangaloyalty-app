@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Android.Webkit;
+using App.Platform.Android.Server.Interfaces;
 using App.Platform.Android.Shared;
 using Newtonsoft.Json.Linq;
 
@@ -36,19 +37,19 @@ namespace App.Platform.Android.Server.Plugins.Browser
         #endregion
 
         #region Constructor
-        
-        private BrowserView(Controller controller, string viewId)
+
+        private BrowserView(Controller controller, IServerCore core, string viewId)
         {
             _controller = controller;
             _view = new WebView(controller);
-            _viewClient = new BrowserViewClient(controller, viewId);
+            _viewClient = new BrowserViewClient(core, viewId);
             _viewScript = new ViewCallback(controller, _view);
             Initialize();
         }
 
-        public static async Task<BrowserView> CreateAsync(Controller controller, string viewId)
+        public static async Task<BrowserView> CreateAsync(Controller controller, IServerCore core, string viewId)
         {
-            return await controller.RunAsync(() => new BrowserView(controller, viewId));
+            return await controller.RunAsync(() => new BrowserView(controller, core, viewId));
         }
 
         #endregion

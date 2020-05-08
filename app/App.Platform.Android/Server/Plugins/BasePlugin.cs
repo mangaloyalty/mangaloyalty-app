@@ -1,4 +1,5 @@
 ﻿using App.Core.Server;
+using App.Platform.Android.Server.Interfaces;
 using App.Platform.Android.Shared;
 
 namespace App.Platform.Android.Server.Plugins
@@ -7,9 +8,9 @@ namespace App.Platform.Android.Server.Plugins
     {
         #region Constructor
 
-        public BasePlugin(Controller controller)
+        public BasePlugin(Controller controller, IServerCore core)
         {
-            Browser = new BrowserPlugin(controller);
+            Browser = new BrowserPlugin(controller, core);
             Resource = new ResourcePlugin();
             Trace = new TracePlugin();
         }

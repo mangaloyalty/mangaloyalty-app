@@ -3,37 +3,37 @@ var oni = (function() {
   var previousId = 0;
 
   return {
-    addEventListener: function(eventName, handler) {
-      if (eventHandlers[eventName]) {
+    addEventListener: function(key, handler) {
+      if (eventHandlers[key]) {
 	    throw new Error();
       } else {
-        eventHandlers[eventName] = handler;
+        eventHandlers[key] = handler;
       }
     },
 
-    dispatchAsync: function(eventName, value) {
-      if (eventHandlers[eventName]) {
-	    return eventHandlers[eventName](value);
+    dispatchAsync: function(key, value) {
+      if (eventHandlers[key]) {
+	    return eventHandlers[key](value);
       } else {
 	    return undefined;
       }
     },
 
-    removeEventListener: function(eventName) {
-      if (eventHandlers[eventName]) {
-        delete eventHandlers[eventName];
+    removeEventListener: function(key) {
+      if (eventHandlers[key]) {
+        delete eventHandlers[key];
       }
     },
 
-    sendAsync: function(eventName, value) {
+    sendAsync: function(key, value) {
       var callbackId = previousId++;
-      var callbackName = "onicb_" + callbackId;
+      var callback = "onicb_" + callbackId;
       return new Promise(function(resolve, reject) {
-        window[callbackName] = function(success, result) {
-          delete window[callbackName];
+        window[callback] = function(success, result) {
+          delete window[callback];
           (success ? resolve : reject)(result);
         };
-        onix.request(JSON.stringify({callbackName, eventName, value}));
+        onix.fromJs(JSON.stringify({callback, key, value}));
       });
     }
   };

@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Threading.Tasks;
 using Android.Webkit;
-using App.Platform.Android.Shared;
+using App.Platform.Android.Server.Interfaces;
 using App.Platform.Android.Utilities;
 using App.Platform.Android.Utilities.Extensions;
 
@@ -11,17 +10,17 @@ namespace App.Platform.Android.Server.Plugins.Browser
 {
     public class BrowserViewClient : WebViewClient
     {
-        private readonly Controller _controller;
+        private readonly IServerCore _core;
         private readonly ConcurrentBag<TaskCompletionSource<bool>> _navigations;
         private readonly ConcurrentDictionary<string, BrowserResponse> _results;
         private readonly string _viewId;
 
         #region Abstracts
 
-        private WebResourceResponse Persist(HttpWebResponse response, string url)
+        private async Task<WebResourceResponse> CacheAsync(HttpWebResponse response, string url)
         {
-            var result = BrowserResponse.Create(response);
-            if (_results.TryAdd(url, result)) throw new Exception("Use ServerReceiver"); // _core.DispatchEvent($"browser.{_viewId}", url);
+            var result = await BrowserResponse.CreateAsync(response);
+            if (_results.TryAdd(url, result)) await _core.EventAsync($"browser.{_viewId}", url);
             return result.ToWebViewResponse();
         }
 
@@ -29,9 +28,9 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         #region Constructor
 
-        public BrowserViewClient(Controller controller, string viewId)
+        public BrowserViewClient(IServerCore core, string viewId)
         {
-            _controller = controller;
+            _core = core;
             _navigations = new ConcurrentBag<TaskCompletionSource<bool>>();
             _results = new ConcurrentDictionary<string, BrowserResponse>();
             _viewId = viewId;
@@ -64,7 +63,9 @@ namespace App.Platform.Android.Server.Plugins.Browser
                 navigation.TrySetResult(true);
             }
         }
-        
+
+        // TODO: [Performance] ShouldInterceptRequest downloads & processes URL in a blocking way.
+        // TODO: ObjectDisposedException?
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
             try
@@ -75,13 +76,13 @@ namespace App.Platform.Android.Server.Plugins.Browser
                 http.Method = request.Method;
                 http.CopyCookies(CookieManager.Instance);
                 http.CopyHeaders(request.RequestHeaders);
-                return Persist((HttpWebResponse) http.GetResponse(), request.Url.ToString());
+                return CacheAsync((HttpWebResponse) http.GetResponse(), request.Url.ToString()).Result;
             }
             catch (WebException ex) when (ex.Response is HttpWebResponse response)
             {
                 var statusCode = (int) response.StatusCode;
                 if (statusCode >= 300 && statusCode < 400) return base.ShouldInterceptRequest(view, request);
-                return Persist(response, request.Url.ToString());
+                return CacheAsync(response, request.Url.ToString()).Result;
             }
             catch (WebException)
             {

@@ -6,10 +6,10 @@ namespace App.Core.Shared.Models
     public class RequestDataModel
     {
         [JsonProperty]
-        public string CallbackName { get; set; }
+        public string Callback { get; set; }
 
         [JsonProperty]
-        public string EventName { get; set; }
+        public string Key { get; set; }
 
         [JsonProperty]
         public JToken Value { get; set; }
