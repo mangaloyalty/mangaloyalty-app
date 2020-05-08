@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Webkit;
 using App.Core.Shared;
+using App.Core.Shared.Extensions;
 using App.Platform.Android.Utilities;
 using Java.Interop;
 using Newtonsoft.Json.Linq;
@@ -47,7 +48,7 @@ namespace App.Platform.Android.Shared
         public void ReceiveResolve(string id, string json)
         {
             if (!_receivers.TryGetValue(id, out var receiver)) return;
-            receiver.TrySetResult(json != null ? JToken.Parse(json) : null);
+            receiver.TrySetResult(json.ParseJson());
         }
 
         [Export("reject")]

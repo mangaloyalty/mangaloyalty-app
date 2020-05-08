@@ -63,23 +63,35 @@
     <Reference Include="Mono.Android" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Clients\ViewClient.cs" />
+    <Compile Include="Client\ClientChannel.cs" />
+    <Compile Include="Client\ClientResponseReceiver.cs" />
+    <Compile Include="Client\Plugins\ProxyPlugin.cs" />
+    <Compile Include="Server\Plugins\BasePlugin.cs" />
+    <Compile Include="Server\ServerCore.cs" />
+    <Compile Include="Server\ServerEventReceiver.cs" />
+    <Compile Include="Shared\Controller.cs" />
+    <Compile Include="Shared\ViewCallback.cs" />
     <Compile Include="MainActivity.cs" />
-    <Compile Include="Utilities\Extensions\ActivityExtensions.cs" />
-    <Compile Include="Plugins\Browser\BrowserViewScript.cs" />
-    <Compile Include="Plugins\Browser\BrowserResponse.cs" />
-    <Compile Include="Plugins\Browser\BrowserView.cs" />
+    <Compile Include="Server\ServerRequestReceiver.cs" />
+    <Compile Include="Server\ServerService.cs" />
+    <Compile Include="Utilities\Constants.cs" />
+    <Compile Include="Server\Plugins\Browser\BrowserResponse.cs" />
+    <Compile Include="Server\Plugins\Browser\BrowserView.cs" />
+    <Compile Include="Utilities\Extensions\ExceptionExtensions.cs" />
     <Compile Include="Utilities\Extensions\HttpWebRequestExtensions.cs" />
-    <Compile Include="Plugins\Browser\BrowserViewClient.cs" />
-    <Compile Include="Plugins\BrowserPlugin.cs" />
-    <Compile Include="Plugins\CorePlugin.cs" />
-    <Compile Include="Plugins\ResourcePlugin.cs" />
-    <Compile Include="Plugins\ShellPlugin.cs" />
+    <Compile Include="Server\Plugins\Browser\BrowserViewClient.cs" />
+    <Compile Include="Server\Plugins\BrowserPlugin.cs" />
+    <Compile Include="Client\Plugins\BasePlugin.cs" />
+    <Compile Include="Server\Plugins\ResourcePlugin.cs" />
+    <Compile Include="Client\Plugins\ShellPlugin.cs" />
     <Compile Include="Utilities\TimeoutTaskCompletionSource.cs" />
-    <Compile Include="Plugins\TracePlugin.cs" />
+    <Compile Include="Server\Plugins\TracePlugin.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
     <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -96,13 +108,10 @@
     <Folder Include="Resources\mipmap-xxxhdpi\" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\index.html" />
+    <AndroidAsset Include="Assets\client.html" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\app.css" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\app.min.js" />
+    <AndroidAsset Include="Assets\client.css" />
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\native\oni.js" />
@@ -123,6 +132,15 @@
       <Project>{507578d8-50d9-4b8a-abb1-b54bd2ded1eb}</Project>
       <Name>App.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\client.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\server.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\server.html" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
 </Project>
