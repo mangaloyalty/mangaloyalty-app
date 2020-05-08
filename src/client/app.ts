@@ -2,7 +2,7 @@ import * as areas from 'mangaloyalty-client';
 import * as app from '.';
 import cl = areas.shared;
 
-// Initialize the button.
+// Initialize the back handler.
 window.oni?.addEventListener('backbutton', () => {
   if (cl.core.dialog.isChildVisible || cl.core.screen.loadCount) return;
   if (cl.core.screen.views.length > 1) return cl.core.screen.leaveAsync();

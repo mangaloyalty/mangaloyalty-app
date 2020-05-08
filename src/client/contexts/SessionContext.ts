@@ -6,7 +6,7 @@ export class SessionContext implements cl.ISessionContext {
   async listAsync(seriesId?: string) {
     try {
       const status = 200;
-      const value = await app.proxyAsync('session', 'list', {seriesId});
+      const value = await app.proxyAsync({key: 'session.list', seriesId});
       return {status, value};
     } catch (error) {
       const status = 500;
@@ -16,9 +16,9 @@ export class SessionContext implements cl.ISessionContext {
 
   async pageAsync(sessionId: string, pageNumber: number) {
     try {
-      const image = await app.proxyAsync('session', 'pageAsync', {sessionId, pageNumber});
+      const image = await app.proxyAsync({key: 'session.pageAsync', sessionId, pageNumber});
       const status = image ? 200 : 404;
-      const value = image ? new Blob([<ArrayBuffer> image]) : undefined;
+      const value = image ? app.toBlob(image) : undefined;
       return {status, value};
     } catch (error) {
       const status = 500;

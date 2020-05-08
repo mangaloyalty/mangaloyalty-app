@@ -10,8 +10,6 @@ using App.Platform.Android.Server;
 
 namespace App.Platform.Android
 {
-    // TODO: Automations on unmetered?
-    // TODO: Service runs on same main thread as activity. Bad when scraping+reading = shit perf
     // TODO: Upgrade from Play Store -> restart service.
     // TODO: Screen orientation change support.
     [Activity(Label = "@string/app_name", LaunchMode = LaunchMode.SingleInstance, MainLauncher = true, ScreenOrientation = ScreenOrientation.Portrait, Theme = "@android:style/Theme.NoTitleBar")]
