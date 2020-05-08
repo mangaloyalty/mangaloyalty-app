@@ -1,16 +1,15 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.OS;
-using App.Platform.Android.Server.Interfaces;
+using Android.Webkit;
 
 namespace App.Platform.Android.Server
 {
     [Service]
     public class ServerService : Service
     {
-        private Controller _controller;
-        private IServerCore _core;
-        private bool _isActive;
+        private ServerCore _core;
+        private WebView _view;
 
         #region Abstracts
 
@@ -44,7 +43,7 @@ namespace App.Platform.Android.Server
 
         #region Statics
 
-        public static IServerCore StartService(Context context)
+        public static ServerCoreConnection StartService(Context context)
         {
             if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
             {
@@ -69,21 +68,20 @@ namespace App.Platform.Android.Server
 
         public override void OnCreate()
         {
-            _controller = new Controller(this);
-            _core = new ServerCore(_controller);
+            _view = new WebView(this);
+            _core = new ServerCore(this, _view);
         }
 
         public override void OnDestroy()
         {
-            if (!_isActive) return;
-            _isActive = false;
             UnbindForeground();
+            _view?.Destroy();
+            _view?.Dispose();
+            _core?.Dispose();
         }
 
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
-            if (_isActive) return StartCommandResult.Sticky;
-            _isActive = true;
             BindChannel();
             BindForeground();
             return StartCommandResult.Sticky;

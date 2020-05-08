@@ -10,6 +10,7 @@ using App.Platform.Android.Server;
 
 namespace App.Platform.Android
 {
+    // TODO: Automations on unmetered?
     // TODO: Service runs on same main thread as activity. Bad when scraping+reading = shit perf
     // TODO: Upgrade from Play Store -> restart service.
     // TODO: Screen orientation change support.
@@ -17,14 +18,14 @@ namespace App.Platform.Android
     public class Activity : global::Android.App.Activity
     {
         private ClientCore _core;
+        private ServerCoreConnection _server;
 
         #region Abstracts
 
         private async Task CreateAsync()
         {
-            var server = ServerService.StartService(this);
-            var view = FindViewById<WebView>(Resource.Id.webView);
-            _core = await ClientCore.CreateAsync(this, server, view);
+            _server = ServerService.StartService(this);
+            _core = await ClientCore.CreateAsync(this, _server, FindViewById<WebView>(Resource.Id.webView));
         }
 
         #endregion
@@ -38,10 +39,17 @@ namespace App.Platform.Android
             _ = CreateAsync();
         }
 
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            _server?.Dispose();
+            _core?.Dispose();
+        }
+
         public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent e)
         {
             if (keyCode != Keycode.Back) return base.OnKeyDown(keyCode, e);
-            _core.NavigateBack();
+            _core.OnBackButton();
             return true;
         }
 

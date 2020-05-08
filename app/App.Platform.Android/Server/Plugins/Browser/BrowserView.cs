@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Webkit;
 using Newtonsoft.Json.Linq;
 
@@ -7,7 +8,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
 {
     public class BrowserView
     {
-        private readonly Controller _controller;
+        private readonly Context _context;
         private readonly WebView _view;
         private readonly BrowserViewClient _viewClient;
         private readonly Callback _viewScript;
@@ -36,18 +37,18 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         #region Constructor
 
-        private BrowserView(Controller controller, ServerCore core, string viewId)
+        private BrowserView(Context context, ServerCore core, string viewId)
         {
-            _controller = controller;
-            _view = new WebView(controller);
+            _context = context;
+            _view = new WebView(context);
             _viewClient = new BrowserViewClient(core, viewId);
-            _viewScript = new Callback(controller, _view);
+            _viewScript = new Callback(context, _view);
             Initialize();
         }
 
-        public static async Task<BrowserView> CreateAsync(Controller controller, ServerCore core, string viewId)
+        public static async Task<BrowserView> CreateAsync(Context context, ServerCore core, string viewId)
         {
-            return await controller.RunAsync(() => new BrowserView(controller, core, viewId));
+            return await context.RunAsync(() => new BrowserView(context, core, viewId));
         }
 
         #endregion
@@ -56,7 +57,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public async Task DestroyAsync()
         {
-            await _controller.RunAsync(() =>
+            await _context.RunAsync(() =>
             {
                 _view.Destroy();
                 _viewClient.Dispose();
@@ -73,7 +74,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
         public async Task NavigateAsync(string url)
         {
             var task = WaitForNavigateAsync();
-            await _controller.RunAsync(() => _view.LoadUrl(url));
+            await _context.RunAsync(() => _view.LoadUrl(url));
             await task;
         }
 

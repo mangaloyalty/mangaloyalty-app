@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Android.Content;
 using Android.Webkit;
 using App.Core;
 using App.Core.Shared;
@@ -11,30 +12,30 @@ namespace App.Platform.Android.Server
 {
     public class ServerCore : Java.Lang.Object, IServerCore
     {
-        private readonly TaskCompletionSource<bool> _bootTcs;
-        private readonly WebView _view;
+        private readonly Callback _callback;
+        private readonly TaskCompletionSource<bool> _initTcs;
         private readonly Bridge _viewBridge;
         private IServerCoreListener _listener;
 
         #region Abstracts
 
-        private void Initialize()
+        private void Initialize(WebView view)
         {
-            _view.AddJavascriptInterface(this, "onix");
-            _view.Settings.JavaScriptEnabled = true;
-            _view.LoadUrl("file:///android_asset/server.html");
+            view.AddJavascriptInterface(this, "onix");
+            view.Settings.JavaScriptEnabled = true;
+            view.LoadUrl("file:///android_asset/server.html");
         }
 
         #endregion
 
         #region Constructor
 
-        public ServerCore(Controller controller)
+        public ServerCore(Context context, WebView view)
         {
-            _bootTcs = new TimeoutTaskCompletionSource<bool>();
-            _view = new WebView(controller);
-            _viewBridge = new Bridge(new Callback(controller, _view), new BasePlugin(_bootTcs, controller, this));
-            Initialize();
+            _callback = new Callback(context, view);
+            _initTcs = new TimeoutTaskCompletionSource<bool>();
+            _viewBridge = new Bridge(_callback, new BasePlugin(context, this, _initTcs));
+            Initialize(view);
         }
 
         #endregion
@@ -71,8 +72,18 @@ namespace App.Platform.Android.Server
 
         public async Task<JToken> RequestAsync(JToken model)
         {
-            await _bootTcs.Task;
+            await _initTcs.Task;
             return await _viewBridge.EventAsync("request", model);
+        }
+
+        #endregion
+
+        #region Overrides of Object
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!disposing) return;
+            _callback.Dispose();
         }
 
         #endregion
