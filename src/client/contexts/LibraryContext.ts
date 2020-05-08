@@ -3,6 +3,10 @@ import * as app from '..';
 import cl = areas.shared;
 
 export class LibraryContext implements cl.ILibraryContext {
+  get enable() {
+    return {seriesDump: false};
+  }
+
   async listReadAsync(readStatus: cl.IEnumeratorReadStatus, seriesStatus: cl.IEnumeratorSeriesStatus, sortKey: cl.IEnumeratorSortKey, title?: string | undefined) {
     try {
       const status = 200;
