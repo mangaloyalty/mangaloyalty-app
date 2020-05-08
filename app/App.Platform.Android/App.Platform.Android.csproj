@@ -63,35 +63,32 @@
     <Reference Include="Mono.Android" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client\ClientChannel.cs" />
-    <Compile Include="Client\ClientResponseReceiver.cs" />
+    <Compile Include="Client\ClientCore.cs" />
+    <Compile Include="Client\ClientCoreListener.cs" />
     <Compile Include="Client\Plugins\ProxyPlugin.cs" />
+    <Compile Include="Server\Interfaces\IServerCore.cs" />
+    <Compile Include="Server\Interfaces\IServerCoreListener.cs" />
     <Compile Include="Server\Plugins\BasePlugin.cs" />
+    <Compile Include="Server\Plugins\SocketPlugin.cs" />
     <Compile Include="Server\ServerCore.cs" />
-    <Compile Include="Server\ServerEventReceiver.cs" />
-    <Compile Include="Shared\Controller.cs" />
-    <Compile Include="Shared\ViewCallback.cs" />
-    <Compile Include="MainActivity.cs" />
-    <Compile Include="Server\ServerRequestReceiver.cs" />
+    <Compile Include="Server\ServerCoreBinder.cs" />
+    <Compile Include="Server\ServerCoreConnection.cs" />
+    <Compile Include="Controller.cs" />
+    <Compile Include="Callback.cs" />
+    <Compile Include="Activity.cs" />
     <Compile Include="Server\ServerService.cs" />
-    <Compile Include="Utilities\Constants.cs" />
     <Compile Include="Server\Plugins\Browser\BrowserResponse.cs" />
     <Compile Include="Server\Plugins\Browser\BrowserView.cs" />
-    <Compile Include="Utilities\Extensions\ExceptionExtensions.cs" />
-    <Compile Include="Utilities\Extensions\HttpWebRequestExtensions.cs" />
+    <Compile Include="Server\Extensions\HttpWebRequestExtensions.cs" />
     <Compile Include="Server\Plugins\Browser\BrowserViewClient.cs" />
     <Compile Include="Server\Plugins\BrowserPlugin.cs" />
     <Compile Include="Client\Plugins\BasePlugin.cs" />
     <Compile Include="Server\Plugins\ResourcePlugin.cs" />
     <Compile Include="Client\Plugins\ShellPlugin.cs" />
-    <Compile Include="Utilities\TimeoutTaskCompletionSource.cs" />
     <Compile Include="Server\Plugins\TracePlugin.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\.editorconfig">
-      <Link>.editorconfig</Link>
-    </None>
     <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>

@@ -2,8 +2,9 @@
 using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
+using App.Core.Shared;
 
-namespace App.Platform.Android.Shared
+namespace App.Platform.Android
 {
     public class Controller
     {
@@ -49,7 +50,7 @@ namespace App.Platform.Android.Shared
 
         public async Task<T> RunAsync<T>(Func<T> func)
         {
-            var tcs = new TaskCompletionSource<T>();
+            var tcs = new TimeoutTaskCompletionSource<T>();
             _handler.Post(() => Run(func, tcs));
             return await tcs.Task;
         }
@@ -57,7 +58,7 @@ namespace App.Platform.Android.Shared
         #endregion
 
         #region Statics
-
+        
         public static implicit operator Context(Controller controller)
         {
             return controller._context;

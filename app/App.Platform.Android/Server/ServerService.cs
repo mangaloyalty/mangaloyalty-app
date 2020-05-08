@@ -2,8 +2,6 @@
 using Android.Content;
 using Android.OS;
 using App.Platform.Android.Server.Interfaces;
-using App.Platform.Android.Shared;
-using App.Platform.Android.Utilities;
 
 namespace App.Platform.Android.Server
 {
@@ -19,7 +17,7 @@ namespace App.Platform.Android.Server
         private void BindChannel()
         {
             if (Build.VERSION.SdkInt < BuildVersionCodes.O) return;
-            var channel = new NotificationChannel(Constants.ChannelServiceKey, Constants.ChannelServiceName, NotificationImportance.Default);
+            var channel = new NotificationChannel("ServiceChannel", "Service", NotificationImportance.Default);
             channel.SetSound(null, null);
             channel.SetShowBadge(false);
             NotificationManager.FromContext(this).CreateNotificationChannel(channel);
@@ -28,16 +26,16 @@ namespace App.Platform.Android.Server
         private void BindForeground()
         {
             if (Build.VERSION.SdkInt < BuildVersionCodes.O) return;
-            StartForeground(Constants.NotificationId, new Notification.Builder(this, Constants.ChannelServiceKey)
-                .SetContentText(Constants.NotificationActive)
+            StartForeground(1, new Notification.Builder(this, "ServiceChannel")
+                .SetContentText("The service is active.")
                 .SetSmallIcon(ApplicationInfo.Icon)
                 .Build());
         }
         
         private void UnbindForeground()
         {
-            NotificationManager.FromContext(this).Notify(Constants.NotificationId, new Notification.Builder(this, Constants.ChannelServiceKey)
-                .SetContentText(Constants.NotificationKilled)
+            NotificationManager.FromContext(this).Notify(1, new Notification.Builder(this, "ServiceChannel")
+                .SetContentText("The service has been killed.")
                 .SetSmallIcon(ApplicationInfo.Icon)
                 .Build());
         }
@@ -46,15 +44,17 @@ namespace App.Platform.Android.Server
 
         #region Statics
 
-        public static void StartService(Context context)
+        public static IServerCore StartService(Context context)
         {
             if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
             {
                 context.StartForegroundService(new Intent(context, typeof(ServerService)));
+                return ServerCoreConnection.Create(context);
             }
             else
             {
                 context.StartService(new Intent(context, typeof(ServerService)));
+                return ServerCoreConnection.Create(context);
             }
         }
 

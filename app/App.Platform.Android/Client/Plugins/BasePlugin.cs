@@ -1,5 +1,5 @@
-﻿using Android.App;
-using App.Core.Client;
+﻿using App.Core.Client;
+using App.Platform.Android.Server.Interfaces;
 
 namespace App.Platform.Android.Client.Plugins
 {
@@ -7,9 +7,9 @@ namespace App.Platform.Android.Client.Plugins
     {
         #region Constructor
 
-        public BasePlugin(Activity activity)
+        public BasePlugin(Activity activity, IServerCore server)
         {
-            Proxy = new ProxyPlugin(activity);
+            Proxy = new ProxyPlugin(server);
             Shell = new ShellPlugin(activity);
         }
 

@@ -1,6 +1,5 @@
-﻿using App.Core.Server;
-using App.Platform.Android.Server.Interfaces;
-using App.Platform.Android.Shared;
+﻿using System.Threading.Tasks;
+using App.Core.Server;
 
 namespace App.Platform.Android.Server.Plugins
 {
@@ -8,10 +7,11 @@ namespace App.Platform.Android.Server.Plugins
     {
         #region Constructor
 
-        public BasePlugin(Controller controller, IServerCore core)
+        public BasePlugin(TaskCompletionSource<bool> bootTcs, Controller controller, ServerCore core)
         {
-            Browser = new BrowserPlugin(controller, core);
+            Browser = new BrowserPlugin(bootTcs, controller, core);
             Resource = new ResourcePlugin();
+            Socket = new SocketPlugin(core);
             Trace = new TracePlugin();
         }
 
@@ -21,6 +21,7 @@ namespace App.Platform.Android.Server.Plugins
 
         public IBrowserPlugin Browser { get; }
         public IResourcePlugin Resource { get; }
+        public ISocketPlugin Socket { get; }
         public ITracePlugin Trace { get; }
 
         #endregion

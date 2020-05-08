@@ -4,6 +4,7 @@
     {
         IBrowserPlugin Browser { get; }
         IResourcePlugin Resource { get; }
+        ISocketPlugin Socket { get; }
         ITracePlugin Trace { get; }
     }
 }

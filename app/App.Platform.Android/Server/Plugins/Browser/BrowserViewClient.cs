@@ -2,15 +2,14 @@
 using System.Net;
 using System.Threading.Tasks;
 using Android.Webkit;
-using App.Platform.Android.Server.Interfaces;
-using App.Platform.Android.Utilities;
-using App.Platform.Android.Utilities.Extensions;
+using App.Core.Shared;
+using App.Platform.Android.Server.Extensions;
 
 namespace App.Platform.Android.Server.Plugins.Browser
 {
     public class BrowserViewClient : WebViewClient
     {
-        private readonly IServerCore _core;
+        private readonly ServerCore _core;
         private readonly ConcurrentBag<TaskCompletionSource<bool>> _navigations;
         private readonly ConcurrentDictionary<string, BrowserResponse> _results;
         private readonly string _viewId;
@@ -28,7 +27,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         #region Constructor
 
-        public BrowserViewClient(IServerCore core, string viewId)
+        public BrowserViewClient(ServerCore core, string viewId)
         {
             _core = core;
             _navigations = new ConcurrentBag<TaskCompletionSource<bool>>();
@@ -47,7 +46,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public async Task WaitForNavigateAsync()
         {
-            var tcs = new TimeoutTaskCompletionSource<bool>(30);
+            var tcs = new TimeoutTaskCompletionSource<bool>();
             _navigations.Add(tcs);
             await tcs.Task;
         }

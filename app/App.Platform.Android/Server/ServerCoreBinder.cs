@@ -20,14 +20,14 @@ namespace App.Platform.Android.Server
 
         #region Implementation of IServerCore
 
-        public async Task<JToken> EventAsync(string key, object value)
+        public async Task ListenAsync(IServerCoreListener listener)
         {
-            return await _server.EventAsync(key, value);
+            await _server.ListenAsync(listener);
         }
 
-        public async Task<JToken> RequestAsync(string key, JToken value)
+        public async Task<JToken> RequestAsync(JToken value)
         {
-            return await _server.RequestAsync(key, value);
+            return await _server.RequestAsync(value);
         }
 
         #endregion
