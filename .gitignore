@@ -1,4 +1,5 @@
 /dist
 /node_modules
-/public/app.min.js
+/public/client.min.js
+/public/server.min.js
 /*.tgz

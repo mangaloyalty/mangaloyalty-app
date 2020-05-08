@@ -11,24 +11,9 @@
     "npm": ">= 6.0.0"
   },
   "devDependencies": {
-    "@types/hammerjs": "2.0.36",
-    "@types/react": "16.8.23",
-    "@types/react-dom": "16.8.4",
-    "@types/react-lazyload": "2.6.0",
-    "@types/socket.io-client": "1.4.32",
-    "@material-ui/core": "4.3.0",
-    "@material-ui/icons": "4.2.1",
-    "hammerjs": "2.0.8",
-    "mangaloyalty-client": "next",
-    "mangaloyalty-server": "next",
-    "mobx": "5.5.0",
-    "mobx-react": "5.2.8",
+    "mangaloyalty-client": "0.12.0-b4",
+    "mangaloyalty-server": "0.12.0-b3",
     "npm-build-tools": "2.2.5",
-    "react": "16.8.6",
-    "react-dom": "16.8.6",
-    "react-lazyload": "2.6.2",
-    "rimraf": "3.0.0",
-    "socket.io-client": "2.3.0",
     "tslib": "1.10.0",
     "typescript": "3.8.3",
     "webpack": "4.43.0",
@@ -37,10 +22,9 @@
   },
   "scripts": {
     "bundle": "npm run -s bundle:android && npm run -s bundle:ios",
-    "bundle:android": "n-copy -d \"app/App.Platform.Android/Assets\" -s \"public\" \"app.*\"",
-    "bundle:ios": "n-copy -d \"app/App.Platform.iOS/Resources\" -s \"public\" \"app.*\"",
-    "prepack": "webpack-cli --config webpack.prod.js && npm run -s bundle",
-    "prepare": "rimraf dist && tsc",
-    "test": "webpack-dev-server --config webpack.dev.js"
+    "bundle:android": "n-copy -d \"app/App.Platform.Android/Assets\" -s \"public\" \"*.js\"",
+    "bundle:ios": "n-copy -d \"app/App.Platform.iOS/Resources\" -s \"public\" \"*.js\"",
+    "prepack": "webpack-cli --config webpack.js && npm run -s bundle",
+    "prepare": "rimraf dist && tsc"
   }
 }
