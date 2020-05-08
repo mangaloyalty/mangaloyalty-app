@@ -1,30 +1,28 @@
 ﻿using System.Threading.Tasks;
-using Android.Content;
 using App.Core.Client;
-using App.Core.Client.Models;
-using App.Platform.Android.Server;
+using App.Platform.Android.Server.Interfaces;
 using Newtonsoft.Json.Linq;
 
 namespace App.Platform.Android.Client.Plugins
 {
     public class ProxyPlugin : IProxyPlugin
     {
-        private readonly ServerCoreConnection _connection;
+        private readonly IServerCore _server;
 
         #region Constructor
 
-        public ProxyPlugin(Context context)
+        public ProxyPlugin(IServerCore server)
         {
-            _connection = ServerCoreConnection.Create(context);
+            _server = server;
         }
 
         #endregion
 
         #region Implementation of IProxyPlugin
 
-        public async Task<JToken> ForwardAsync(ProxyDataModel model)
+        public async Task<JToken> ForwardAsync(JToken model)
         {
-            return await _connection.RequestAsync(model.Key, model.Value);
+            return await _server.RequestAsync(model);
         }
 
         #endregion

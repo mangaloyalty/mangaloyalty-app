@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
+using App.Core.Shared;
 using App.Platform.Android.Server.Interfaces;
 using Newtonsoft.Json.Linq;
 
@@ -8,13 +10,13 @@ namespace App.Platform.Android.Server
 {
     public class ServerCoreConnection : Java.Lang.Object, IServerCore, IServiceConnection
     {
-        private TaskCompletionSource<ServerCoreBinder> _binder;
+        private readonly TaskCompletionSource<ServerCoreBinder> _binder;
 
         #region Constructor
 
         private ServerCoreConnection()
         {
-            _binder = new TaskCompletionSource<ServerCoreBinder>();
+            _binder = new TimeoutTaskCompletionSource<ServerCoreBinder>();
         }
 
         public static ServerCoreConnection Create(Context context)
@@ -28,16 +30,16 @@ namespace App.Platform.Android.Server
 
         #region Implementation of IServerCore
 
-        public async Task<JToken> EventAsync(string key, object value)
+        public async Task ListenAsync(IServerCoreListener listener)
         {
             var binder = await _binder.Task;
-            return await binder.EventAsync(key, value);
+            await binder.ListenAsync(listener);
         }
 
-        public async Task<JToken> RequestAsync(string key, JToken value)
+        public async Task<JToken> RequestAsync(JToken model)
         {
             var binder = await _binder.Task;
-            return await binder.RequestAsync(key, value);
+            return await binder.RequestAsync(model);
         }
 
         #endregion
@@ -51,7 +53,7 @@ namespace App.Platform.Android.Server
 
         public void OnServiceDisconnected(ComponentName name)
         {
-            _binder = new TaskCompletionSource<ServerCoreBinder>();
+            throw new Exception();
         }
 
         #endregion

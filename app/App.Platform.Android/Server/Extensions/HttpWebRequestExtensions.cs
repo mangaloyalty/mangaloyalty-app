@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Net;
 using Android.Webkit;
 
-namespace App.Platform.Android.Utilities.Extensions
+namespace App.Platform.Android.Server.Extensions
 {
     public static class HttpWebRequestExtensions
     {
