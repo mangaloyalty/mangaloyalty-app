@@ -4,24 +4,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using App.Core.Server;
 using App.Core.Server.Models;
-using App.Platform.Android.Server.Interfaces;
 using App.Platform.Android.Server.Plugins.Browser;
-using App.Platform.Android.Shared;
 using Newtonsoft.Json.Linq;
 
 namespace App.Platform.Android.Server.Plugins
 {
     public class BrowserPlugin : IBrowserPlugin
     {
+        private readonly TaskCompletionSource<bool> _bootTcs;
         private readonly Controller _controller;
-        private readonly IServerCore _core;
+        private readonly ServerCore _core;
         private readonly ConcurrentDictionary<string, BrowserView> _views;
         private int _previousId;
 
         #region Constructor
 
-        public BrowserPlugin(Controller controller, IServerCore core)
+        public BrowserPlugin(TaskCompletionSource<bool> bootTcs, Controller controller, ServerCore core)
         {
+            _bootTcs = bootTcs;
             _controller = controller;
             _core = core;
             _views = new ConcurrentDictionary<string, BrowserView>();
@@ -33,6 +33,7 @@ namespace App.Platform.Android.Server.Plugins
         
         public Task BootAsync()
         {
+            _bootTcs.TrySetResult(true);
             return Task.CompletedTask;
         }
 

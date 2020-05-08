@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using Android.Webkit;
 using App.Core.Shared;
 using App.Core.Shared.Extensions;
-using App.Platform.Android.Utilities;
+using App.Core.Shared.Interfaces;
 using Java.Interop;
 using Newtonsoft.Json.Linq;
 
-namespace App.Platform.Android.Shared
+namespace App.Platform.Android
 {
-    public class ViewCallback : Java.Lang.Object, ICallback
+    public class Callback : Java.Lang.Object, ICallback
     {
         private readonly Controller _controller;
         private readonly ConcurrentDictionary<string, TaskCompletionSource<JToken>> _receivers;
@@ -30,7 +30,7 @@ namespace App.Platform.Android.Shared
 
         #region Constructor
 
-        public ViewCallback(Controller controller, WebView view)
+        public Callback(Controller controller, WebView view)
         {
             _controller = controller;
             _receivers = new ConcurrentDictionary<string, TaskCompletionSource<JToken>>();
@@ -61,13 +61,13 @@ namespace App.Platform.Android.Shared
 
         #endregion
 
-        #region Implementation of IClient
+        #region Implementation of ICallback
 
         public async Task<JToken> EvaluateAsync(string script)
         {
             // Initialize the identifier.
             var id = Interlocked.Increment(ref _previousId).ToString();
-            var tcs = new TimeoutTaskCompletionSource<JToken>(30);
+            var tcs = new TimeoutTaskCompletionSource<JToken>();
             if (!_receivers.TryAdd(id, tcs)) return null;
 
             // Initialize the script.
