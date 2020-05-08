@@ -12,7 +12,7 @@ export class BrowserPage implements sv.IBrowserPage {
 
   static async createAsync<T>(id: string, handlerAsync: (page: app.BrowserPage) => Promise<T> | T) {
     const page = new app.BrowserPage(id);
-    const handler = (value?: string) => page._onReceive(value);
+    const handler = page._onReceive.bind(page);
     const eventName = `browser.${id}`;
     try {
       window.oni?.addEventListener(eventName, handler);

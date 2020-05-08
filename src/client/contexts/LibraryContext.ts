@@ -6,7 +6,7 @@ export class LibraryContext implements cl.ILibraryContext {
   async listReadAsync(readStatus: cl.IEnumeratorReadStatus, seriesStatus: cl.IEnumeratorSeriesStatus, sortKey: cl.IEnumeratorSortKey, title?: string | undefined) {
     try {
       const status = 200;
-      const value = await app.proxyAsync('library', 'listReadAsync', {readStatus, seriesStatus, sortKey, title});
+      const value = await app.proxyAsync({key: 'library.listReadAsync', readStatus, seriesStatus, sortKey, title});
       return {status, value};
     } catch (error) {
       const status = 500;
@@ -16,7 +16,7 @@ export class LibraryContext implements cl.ILibraryContext {
 
   async seriesCreateAsync(url: string) {
     try {
-      const id = await app.proxyAsync('library', 'seriesCreateAsync', {url});
+      const id = await app.proxyAsync({key: 'library.seriesCreateAsync', url});
       const status = 200;
       const value = {id};
       return {status, value};
@@ -28,7 +28,7 @@ export class LibraryContext implements cl.ILibraryContext {
 
   async seriesDeleteAsync(seriesId: string) {
     try {
-      const success = await app.proxyAsync('library', 'seriesDeleteAsync', {seriesId});
+      const success = await app.proxyAsync({key: 'library.seriesDeleteAsync', seriesId});
       const status = success ? 200 : 404;
       return {status};
     } catch (error) {
@@ -43,9 +43,9 @@ export class LibraryContext implements cl.ILibraryContext {
 
   async seriesImageAsync(seriesId: string) {
     try {
-      const image = await app.proxyAsync('library', 'seriesImageAsync', {seriesId});
+      const image = await app.proxyAsync({key: 'library.seriesImageAsync', seriesId});
       const status = image ? 200 : 404;
-      const value = image ? new Blob([<ArrayBuffer> image]) : undefined;
+      const value = image ? app.toBlob(image) : undefined;
       return {status, value};
     } catch (error) {
       const status = 500;
@@ -55,7 +55,7 @@ export class LibraryContext implements cl.ILibraryContext {
 
   async seriesReadAsync(seriesId: string) {
     try {
-      const series = await app.proxyAsync('library', 'seriesReadAsync', {seriesId});
+      const series = await app.proxyAsync({key: 'library.seriesReadAsync', seriesId});
       const status = series ? 200 : 404;
       const value = series;
       return {status, value};
@@ -67,7 +67,7 @@ export class LibraryContext implements cl.ILibraryContext {
 
   async seriesPatchAsync(seriesId: string, frequency: cl.IEnumeratorFrequency, strategy: cl.IEnumeratorStrategy) {
     try {
-      const success = await app.proxyAsync('library', 'seriesPatchAsync', {seriesId, frequency, strategy});
+      const success = await app.proxyAsync({key: 'library.seriesPatchAsync', seriesId, frequency, strategy});
       const status = success ? 200 : 404;
       return {status};
     } catch (error) {
@@ -78,7 +78,7 @@ export class LibraryContext implements cl.ILibraryContext {
 
   async seriesUpdateAsync(seriesId: string) {
     try {
-      const success = await app.proxyAsync('library', 'seriesUpdateAsync', {seriesId});
+      const success = await app.proxyAsync({key: 'library.seriesUpdateAsync', seriesId});
       const status = success ? 200 : 404;
       return {status};
     } catch (error) {
@@ -89,7 +89,7 @@ export class LibraryContext implements cl.ILibraryContext {
 
   async chapterDeleteAsync(seriesId: string, chapterId: string) {
     try {
-      const success = await app.proxyAsync('library', 'chapterDeleteAsync', {seriesId, chapterId});
+      const success = await app.proxyAsync({key: 'library.chapterDeleteAsync', seriesId, chapterId});
       const status = success ? 200 : 404;
       return {status};
     } catch (error) {
@@ -100,9 +100,9 @@ export class LibraryContext implements cl.ILibraryContext {
 
   async chapterReadAsync(seriesId: string, chapterId: string) {
     try {
-      const session = await app.proxyAsync('library', 'chapterReadAsync', {seriesId, chapterId});
+      const session = await app.proxyAsync({key: 'library.chapterReadAsync', seriesId, chapterId});
       const status = session ? 200 : 404;
-      const value = session ? session.getData() : undefined;
+      const value = session;
       return {status, value};
     } catch (error) {
       const status = 500;
@@ -112,7 +112,7 @@ export class LibraryContext implements cl.ILibraryContext {
 
   async chapterPatchAsync(seriesId: string, chapterId: string, isReadCompleted?: boolean | undefined, pageReadNumber?: number | undefined) {
     try {
-      const success = await app.proxyAsync('library', 'chapterPatchAsync', {seriesId, chapterId, isReadCompleted, pageReadNumber});
+      const success = await app.proxyAsync({key: 'library.chapterPatchAsync', seriesId, chapterId, isReadCompleted, pageReadNumber});
       const status = success ? 200 : 404;
       return {status};
     } catch (error) {
@@ -123,7 +123,7 @@ export class LibraryContext implements cl.ILibraryContext {
 
   async chapterUpdateAsync(seriesId: string, chapterId: string) {
     try {
-      const success = await app.proxyAsync('library', 'chapterUpdateAsync', {seriesId, chapterId});
+      const success = await app.proxyAsync({key: 'library.chapterUpdateAsync', seriesId, chapterId});
       const status = success ? 200 : 404;
       return {status};
     } catch (error) {
