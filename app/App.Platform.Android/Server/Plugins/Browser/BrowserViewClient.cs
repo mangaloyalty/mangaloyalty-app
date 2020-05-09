@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Threading.Tasks;
 using Android.Webkit;
@@ -63,29 +64,34 @@ namespace App.Platform.Android.Server.Plugins.Browser
             }
         }
 
-        // TODO: [Performance] ShouldInterceptRequest downloads & processes URL in a blocking way.
-        // TODO: ObjectDisposedException?
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
             try
             {
-                if (request.Method != "GET") return base.ShouldInterceptRequest(view, request);
-                if (_results.TryGetValue(request.Url.ToString(), out var result)) return result.ToWebViewResponse();
-                var http = WebRequest.CreateHttp(request.Url.ToString());
-                http.Method = request.Method;
-                http.CopyCookies(CookieManager.Instance);
-                http.CopyHeaders(request.RequestHeaders);
-                return CacheAsync((HttpWebResponse) http.GetResponse(), request.Url.ToString()).Result;
+                try
+                {
+                    if (request.Method != "GET") return base.ShouldInterceptRequest(view, request);
+                    if (_results.TryGetValue(request.Url.ToString(), out var result)) return result.ToWebViewResponse();
+                    var http = WebRequest.CreateHttp(request.Url.ToString());
+                    http.Method = request.Method;
+                    http.CopyCookies(CookieManager.Instance);
+                    http.CopyHeaders(request.RequestHeaders);
+                    return CacheAsync((HttpWebResponse) http.GetResponse(), request.Url.ToString()).Result;
+                }
+                catch (WebException ex) when (ex.Response is HttpWebResponse response)
+                {
+                    var statusCode = (int) response.StatusCode;
+                    if (statusCode >= 300 && statusCode < 400) return base.ShouldInterceptRequest(view, request);
+                    return CacheAsync(response, request.Url.ToString()).Result;
+                }
+                catch (WebException)
+                {
+                    return base.ShouldInterceptRequest(view, request);
+                }
             }
-            catch (WebException ex) when (ex.Response is HttpWebResponse response)
+            catch (ObjectDisposedException)
             {
-                var statusCode = (int) response.StatusCode;
-                if (statusCode >= 300 && statusCode < 400) return base.ShouldInterceptRequest(view, request);
-                return CacheAsync(response, request.Url.ToString()).Result;
-            }
-            catch (WebException)
-            {
-                return base.ShouldInterceptRequest(view, request);
+                return null;
             }
         }
 
@@ -93,6 +99,16 @@ namespace App.Platform.Android.Server.Plugins.Browser
         {
             _results.TryRemove(request.Url.ToString(), out _);
             return false;
+        }
+
+        #endregion
+
+        #region Overrides of Object
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!disposing) return;
+            while (_navigationTcs.TryTake(out var navigationTcs)) navigationTcs.TrySetException(new Exception());
         }
 
         #endregion
