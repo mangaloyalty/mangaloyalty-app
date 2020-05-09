@@ -72,6 +72,7 @@
     <Compile Include="Server\Plugins\SocketPlugin.cs" />
     <Compile Include="Server\Receivers\BootCompletedReceiver.cs" />
     <Compile Include="Server\Receivers\MyPackageReplacedReceiver.cs" />
+    <Compile Include="Server\Receivers\NotificationReceiver.cs" />
     <Compile Include="Server\ServerCore.cs" />
     <Compile Include="Server\ServerCoreBinder.cs" />
     <Compile Include="Server\ServerCoreConnection.cs" />
