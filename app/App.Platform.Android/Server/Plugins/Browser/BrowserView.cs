@@ -59,9 +59,9 @@ namespace App.Platform.Android.Server.Plugins.Browser
         {
             await _context.RunAsync(() =>
             {
-                _view.Destroy();
-                _viewClient.Dispose();
                 _viewScript.Dispose();
+                _viewClient.Dispose();
+                _view.Destroy();
                 _view.Dispose();
             });
         }

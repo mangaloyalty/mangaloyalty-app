@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
@@ -41,6 +43,14 @@ namespace App.Platform.Android
             var tcs = new TimeoutTaskCompletionSource<T>();
             handler.Post(() => Run(func, tcs));
             return await tcs.Task;
+        }
+
+        public static bool TryTake<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> source, out TValue value)
+        {
+            var key = source.Keys.FirstOrDefault();
+            if (key != null) return source.TryRemove(key, out value);
+            value = default;
+            return false;
         }
 
         #endregion
