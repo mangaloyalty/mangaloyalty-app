@@ -10,6 +10,7 @@ export class TraceManager implements sv.ITraceManager {
   }
 
   info(message: string): void {
-    this._previous = this._previous.then(() => window.oni?.sendAsync('trace.infoAsync', {message}));
+    const absolutePath = sv.settings.logger;
+    this._previous = this._previous.then(() => window.oni?.sendAsync('trace.infoAsync', {absolutePath, message}));
   }
 }
