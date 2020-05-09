@@ -27,6 +27,18 @@ namespace App.Platform.Android
             _view.AddJavascriptInterface(this, _token);
         }
 
+        private void EvaluateJavascript(string run)
+        {
+            try
+            {
+                _view.EvaluateJavascript(run, null);
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+        }
+
         #endregion
 
         #region Constructor
@@ -73,7 +85,7 @@ namespace App.Platform.Android
 
             // Initialize the script.
             var run = Script.Replace("$id", id).Replace("$script", script).Replace("$token", _token);
-            await _context.RunAsync(() => _view.EvaluateJavascript(run, null));
+            await _context.RunAsync(() => EvaluateJavascript(run));
             return await tcs.Task;
         }
 
@@ -86,6 +98,16 @@ namespace App.Platform.Android
         }, () => {
             $token.reject($id);
         });";
+
+        #endregion
+
+        #region Overrides of Object
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!disposing) return;
+            while (_receiverTcs.TryTake(out var receiverTcs)) receiverTcs.TrySetException(new Exception());
+        }
 
         #endregion
     }
