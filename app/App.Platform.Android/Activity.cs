@@ -10,7 +10,6 @@ using App.Platform.Android.Server;
 
 namespace App.Platform.Android
 {
-    // TODO: Upgrade from Play Store -> restart service.
     // TODO: Screen orientation change support.
     [Activity(Label = "@string/app_name", LaunchMode = LaunchMode.SingleInstance, MainLauncher = true, ScreenOrientation = ScreenOrientation.Portrait, Theme = "@android:style/Theme.NoTitleBar")]
     public class Activity : global::Android.App.Activity
