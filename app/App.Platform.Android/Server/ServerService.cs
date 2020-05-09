@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.OS;
 using Android.Webkit;
+using App.Platform.Android.Server.Receivers;
 
 namespace App.Platform.Android.Server
 {
@@ -26,6 +27,7 @@ namespace App.Platform.Android.Server
         {
             if (Build.VERSION.SdkInt < BuildVersionCodes.O) return;
             StartForeground(1, new Notification.Builder(this, "ServiceChannel")
+                .SetContentIntent(PendingIntent.GetBroadcast(this, 0, new Intent(this, typeof(NotificationReceiver)), 0))
                 .SetContentText("The service is active.")
                 .SetSmallIcon(ApplicationInfo.Icon)
                 .Build());
@@ -34,6 +36,7 @@ namespace App.Platform.Android.Server
         private void UnbindForeground()
         {
             NotificationManager.FromContext(this).Notify(1, new Notification.Builder(this, "ServiceChannel")
+                .SetContentIntent(PendingIntent.GetBroadcast(this, 0, new Intent(this, typeof(NotificationReceiver)), 0))
                 .SetContentText("The service has been killed.")
                 .SetSmallIcon(ApplicationInfo.Icon)
                 .Build());
