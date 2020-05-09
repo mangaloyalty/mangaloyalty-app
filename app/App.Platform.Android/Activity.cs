@@ -10,8 +10,7 @@ using App.Platform.Android.Server;
 
 namespace App.Platform.Android
 {
-    // TODO: Screen orientation change support.
-    [Activity(Label = "@string/app_name", LaunchMode = LaunchMode.SingleInstance, MainLauncher = true, ScreenOrientation = ScreenOrientation.Portrait, Theme = "@android:style/Theme.NoTitleBar")]
+    [Activity(Label = "@string/app_name", LaunchMode = LaunchMode.SingleInstance, MainLauncher = true, Theme = "@android:style/Theme.NoTitleBar", ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
     public class Activity : global::Android.App.Activity
     {
         private ClientCore _core;
