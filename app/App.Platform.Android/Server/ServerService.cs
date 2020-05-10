@@ -9,6 +9,7 @@ namespace App.Platform.Android.Server
     [Service]
     public class ServerService : Service
     {
+        private NotificationChannel _channel;
         private ServerCore _core;
         private WebView _view;
 
@@ -17,10 +18,10 @@ namespace App.Platform.Android.Server
         private void BindChannel()
         {
             if (Build.VERSION.SdkInt < BuildVersionCodes.O) return;
-            var channel = new NotificationChannel("ServiceChannel", "Service", NotificationImportance.Default);
-            channel.SetSound(null, null);
-            channel.SetShowBadge(false);
-            NotificationManager.FromContext(this).CreateNotificationChannel(channel);
+            _channel = new NotificationChannel("ServiceChannel", "Service", NotificationImportance.Default);
+            _channel.SetSound(null, null);
+            _channel.SetShowBadge(false);
+            NotificationManager.FromContext(this).CreateNotificationChannel(_channel);
         }
 
         private void BindForeground()
@@ -85,6 +86,7 @@ namespace App.Platform.Android.Server
 
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
+            if (_channel != null) return StartCommandResult.Sticky;
             BindChannel();
             BindForeground();
             return StartCommandResult.Sticky;

@@ -6,9 +6,8 @@ export class BrowserManager implements sv.IBrowserManager {
     const id = await window.oni?.sendAsync('browser.createAsync');
     try {
       return await app.BrowserPage.createAsync(String(id), handlerAsync);
-    } catch (error) {
+    } finally {
       await window.oni?.sendAsync('browser.destroyAsync', {id});
-      throw error;
     }
   }
 
