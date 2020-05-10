@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.Content;
 using App.Core.Server;
 using App.Core.Server.Models;
 using App.Core.Shared.Extensions;
@@ -13,13 +14,24 @@ namespace App.Platform.Android.Server.Plugins
 {
     public class ResourcePlugin : IResourcePlugin
     {
+        private readonly Context _context;
+
         #region Abstracts
 
-        private static string GetAbsolutePath(string absolutePath)
+        private string GetAbsolutePath(string absolutePath)
         {
-            var basePath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            var relativePath = absolutePath.TrimStart('/');
+            var basePath = _context.GetExternalFilesDir(null).AbsolutePath;
+            var relativePath = absolutePath.Substring(14);
             return Path.Combine(basePath, relativePath);
+        }
+
+        #endregion
+
+        #region Constructor
+
+        public ResourcePlugin(Context context)
+        {
+            _context = context;
         }
 
         #endregion
