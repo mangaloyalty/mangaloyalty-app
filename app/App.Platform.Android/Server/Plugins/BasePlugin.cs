@@ -11,9 +11,9 @@ namespace App.Platform.Android.Server.Plugins
         public BasePlugin(Context context, ServerCore core, TaskCompletionSource<bool> initTcs)
         {
             Browser = new BrowserPlugin(context, core, initTcs);
-            Resource = new ResourcePlugin();
+            Resource = new ResourcePlugin(context);
             Socket = new SocketPlugin(core);
-            Trace = new TracePlugin();
+            Trace = new TracePlugin(context);
         }
 
         #endregion
