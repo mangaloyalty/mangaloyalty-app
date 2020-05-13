@@ -1,19 +1,18 @@
 ﻿using System.Threading.Tasks;
 using App.Core.Client;
-using App.Platform.Android.Server.Interfaces;
 using Newtonsoft.Json.Linq;
 
 namespace App.Platform.Android.Client.Plugins
 {
     public class ProxyPlugin : IProxyPlugin
     {
-        private readonly IServerCore _server;
+        private readonly ClientCore _core;
 
         #region Constructor
 
-        public ProxyPlugin(IServerCore server)
+        public ProxyPlugin(ClientCore core)
         {
-            _server = server;
+            _core = core;
         }
 
         #endregion
@@ -22,7 +21,7 @@ namespace App.Platform.Android.Client.Plugins
 
         public async Task<JToken> ForwardAsync(JToken model)
         {
-            return await _server.RequestAsync(model);
+            return await _core.ForwardAsync(model);
         }
 
         #endregion

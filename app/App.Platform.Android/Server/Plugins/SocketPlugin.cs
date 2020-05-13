@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using App.Core.Server;
 using Newtonsoft.Json.Linq;
 
@@ -21,7 +22,14 @@ namespace App.Platform.Android.Server.Plugins
 
         public async Task EmitAsync(JToken model)
         {
-            await _core.EmitAsync(model);
+            try
+            {
+                await _core.EmitAsync(model);
+            }
+            catch (Exception)
+            {
+                return;
+            }
         }
 
         #endregion

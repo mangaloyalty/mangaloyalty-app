@@ -47,17 +47,15 @@ namespace App.Platform.Android.Server
 
         #region Statics
 
-        public static ServerCoreConnection StartService(Context context)
+        public static void StartService(Context context)
         {
             if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
             {
                 context.StartForegroundService(new Intent(context, typeof(ServerService)));
-                return ServerCoreConnection.Create(context);
             }
             else
             {
                 context.StartService(new Intent(context, typeof(ServerService)));
-                return ServerCoreConnection.Create(context);
             }
         }
 

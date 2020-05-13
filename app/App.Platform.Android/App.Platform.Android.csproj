@@ -64,7 +64,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\ClientCore.cs" />
-    <Compile Include="Client\ClientCoreListener.cs" />
     <Compile Include="Client\Plugins\ProxyPlugin.cs" />
     <Compile Include="Server\Interfaces\IServerCore.cs" />
     <Compile Include="Server\Interfaces\IServerCoreListener.cs" />
@@ -77,7 +76,6 @@
     <Compile Include="Server\Receivers\NotificationReceiver.cs" />
     <Compile Include="Server\ServerCore.cs" />
     <Compile Include="Server\ServerCoreBinder.cs" />
-    <Compile Include="Server\ServerCoreConnection.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Callback.cs" />
     <Compile Include="Activity.cs" />
