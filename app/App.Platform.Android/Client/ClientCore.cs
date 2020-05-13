@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Android.Content;
+using Android.OS;
 using Android.Views;
 using Android.Webkit;
 using App.Core;
@@ -9,9 +12,10 @@ using Newtonsoft.Json.Linq;
 
 namespace App.Platform.Android.Client
 {
-    public class ClientCore : Java.Lang.Object
+    public class ClientCore : Java.Lang.Object, IServerCoreListener, IServiceConnection
     {
         private readonly Bridge _bridge;
+        private IServerCore _server;
 
         #region Constructor
 
@@ -26,22 +30,22 @@ namespace App.Platform.Android.Client
             view.LoadUrl("file:///android_asset/client.html");
         }
 
-        private ClientCore(Activity activity, IServerCore server, WebView view)
+        public ClientCore(Activity activity, WebView view)
         {
-            _bridge = new Bridge(new Callback(activity, view), new BasePlugin(activity, server));
+            _bridge = new Bridge(new Callback(activity, view), new BasePlugin(activity, this));
             Initialize(view);
-        }
-
-        public static async Task<ClientCore> CreateAsync(Activity activity, IServerCore server, WebView view)
-        {
-            var core = new ClientCore(activity, server, view);
-            await server.ListenAsync(new ClientCoreListener(core));
-            return core;
         }
 
         #endregion
 
         #region Methods
+
+        public async Task<JToken> ForwardAsync(JToken model)
+        {
+            var responseTask = _server?.RequestAsync(model);
+            if (responseTask == null) throw new Exception();
+            return await responseTask;
+        }
 
         [Export("fromJs")]
         [JavascriptInterface]
@@ -55,9 +59,28 @@ namespace App.Platform.Android.Client
             _ = _bridge.EventAsync("backbutton");
         }
 
+        #endregion
+
+        #region Implementation of IServerCoreListener
+
         public async Task SocketAsync(JToken model)
         {
             await _bridge.EventAsync("socket", model);
+        }
+
+        #endregion
+
+        #region Implementation of IServiceConnection
+
+        public void OnServiceConnected(ComponentName name, IBinder service)
+        {
+            _server = service as IServerCore;
+            _server?.ListenAsync(this).ContinueWith(t => SocketAsync(new JObject(new JProperty("type", "SocketConnect"))));
+        }
+
+        public void OnServiceDisconnected(ComponentName name)
+        {
+            _server = null;
         }
 
         #endregion
