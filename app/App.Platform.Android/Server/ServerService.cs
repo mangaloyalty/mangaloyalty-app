@@ -80,8 +80,6 @@ namespace App.Platform.Android.Server
         {
             UnbindForeground();
             _view?.Destroy();
-            _view?.Dispose();
-            _core?.Dispose();
         }
 
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)

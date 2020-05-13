@@ -13,17 +13,15 @@ namespace App.Platform.Android.Server.Plugins
     public class BrowserPlugin : IBrowserPlugin
     {
         private readonly Context _context;
-        private readonly ServerCore _core;
         private readonly TaskCompletionSource<bool> _initTcs;
         private readonly ConcurrentDictionary<string, BrowserView> _views;
         private int _previousId;
 
         #region Constructor
 
-        public BrowserPlugin(Context context, ServerCore core, TaskCompletionSource<bool> initTcs)
+        public BrowserPlugin(Context context, TaskCompletionSource<bool> initTcs)
         {
             _context = context;
-            _core = core;
             _initTcs = initTcs;
             _views = new ConcurrentDictionary<string, BrowserView>();
         }
@@ -41,7 +39,7 @@ namespace App.Platform.Android.Server.Plugins
         public async Task<string> CreateAsync()
         {
             var viewId = Interlocked.Increment(ref _previousId).ToString();
-            var view = await BrowserView.CreateAsync(_context, _core, viewId);
+            var view = await BrowserView.CreateAsync(_context);
             if (_views.TryAdd(viewId, view)) return viewId;
             await view.DestroyAsync();
             throw new Exception();

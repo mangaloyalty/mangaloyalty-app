@@ -12,7 +12,6 @@ namespace App.Platform.Android.Server
 {
     public class ServerCore : Java.Lang.Object, IServerCore
     {
-        private readonly Callback _callback;
         private readonly TaskCompletionSource<bool> _initTcs;
         private readonly Bridge _viewBridge;
         private IServerCoreListener _listener;
@@ -32,9 +31,8 @@ namespace App.Platform.Android.Server
 
         public ServerCore(Context context, WebView view)
         {
-            _callback = new Callback(context, view);
             _initTcs = new TimeoutTaskCompletionSource<bool>();
-            _viewBridge = new Bridge(_callback, new BasePlugin(context, this, _initTcs));
+            _viewBridge = new Bridge(new Callback(context, view), new BasePlugin(context, this, _initTcs));
             Initialize(view);
         }
 
@@ -48,11 +46,6 @@ namespace App.Platform.Android.Server
             if (task != null) await task;
         }
 
-        public async Task<JToken> EventAsync(string key, object value)
-        {
-            return await _viewBridge.EventAsync(key, value);
-        }
-
         [Export("fromJs")]
         [JavascriptInterface]
         public void FromJavascript(string json)
@@ -64,26 +57,16 @@ namespace App.Platform.Android.Server
 
         #region Implementation of IServerCore
 
-        public Task ListenAsync(IServerCoreListener listener)
+        public async Task ListenAsync(IServerCoreListener listener)
         {
+            await _initTcs.Task;
             _listener = listener;
-            return Task.CompletedTask;
         }
 
         public async Task<JToken> RequestAsync(JToken model)
         {
             await _initTcs.Task;
             return await _viewBridge.EventAsync("request", model);
-        }
-
-        #endregion
-
-        #region Overrides of Object
-
-        protected override void Dispose(bool disposing)
-        {
-            if (!disposing) return;
-            _callback.Dispose();
         }
 
         #endregion

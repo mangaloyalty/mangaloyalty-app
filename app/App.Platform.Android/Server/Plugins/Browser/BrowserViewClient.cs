@@ -1,64 +1,88 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Android.Webkit;
 using App.Core.Shared;
-using App.Platform.Android.Server.Extensions;
+using App.Platform.Android.Server.Plugins.Browser.Enumerators;
+using App.Platform.Android.Server.Plugins.Browser.Extensions;
 
 namespace App.Platform.Android.Server.Plugins.Browser
 {
     public class BrowserViewClient : WebViewClient
     {
-        private readonly ServerCore _core;
-        private readonly ConcurrentBag<TaskCompletionSource<bool>> _navigationTcs;
-        private readonly ConcurrentDictionary<string, BrowserResponse> _results;
-        private readonly string _viewId;
+        private readonly ConcurrentDictionary<string, TimeoutTaskCompletionSource<byte[]>> _responseTcs;
+        private readonly ConcurrentBag<TimeoutTaskCompletionSource<bool>> _visibleTcs;
 
         #region Abstracts
 
-        private async Task<WebResourceResponse> CacheAsync(HttpWebResponse response, string url)
+        private WebResourceResponse Cache(string method, string url, IDictionary<string, string> headers)
         {
-            var result = await BrowserResponse.CreateAsync(response);
-            if (_results.TryAdd(url, result)) await _core.EventAsync($"browser.{_viewId}", url);
-            return result.ToWebViewResponse();
+            // Initialize the request.
+            var request = WebRequest.CreateHttp(url);
+            request.CopyCookies(CookieManager.Instance);
+            request.CopyHeaders(headers);
+            request.Method = method;
+
+            // Initialize the response.
+            using var memoryStream = new MemoryStream();
+            using var response = (HttpWebResponse) request.GetResponse();
+            using var responseStream = response.GetResponseStream();
+            responseStream?.CopyTo(memoryStream);
+
+            // Initialize the response buffer.
+            var responseBuffer = memoryStream.ToArray();
+            var responseTcs = _responseTcs.GetOrAdd(url, x => new TimeoutTaskCompletionSource<byte[]>());
+            responseTcs.TrySetResult(responseBuffer);
+
+            // Return the response.
+            var contentEncoding = response.ContentEncoding;
+            var contentType = Regex.Replace(response.ContentType, @"\s*;(.*)$", string.Empty);
+            var responseHeaders = response.Headers.AllKeys.ToDictionary(x => x, x => response.Headers[x]);
+            var statusCode = (int) response.StatusCode;
+            var statusDescription = response.StatusDescription;
+            var stream = new MemoryStream(responseBuffer);
+            return new WebResourceResponse(contentType, contentEncoding, statusCode, statusDescription, responseHeaders, stream);
         }
 
         #endregion
 
         #region Constructor
 
-        public BrowserViewClient(ServerCore core, string viewId)
+        public BrowserViewClient()
         {
-            _core = core;
-            _navigationTcs = new ConcurrentBag<TaskCompletionSource<bool>>();
-            _results = new ConcurrentDictionary<string, BrowserResponse>();
-            _viewId = viewId;
+            _responseTcs = new ConcurrentDictionary<string, TimeoutTaskCompletionSource<byte[]>>();
+            _visibleTcs = new ConcurrentBag<TimeoutTaskCompletionSource<bool>>();
         }
-        
+
         #endregion
 
         #region Methods
 
-        public Task<byte[]> ResponseAsync(string url)
+        public async Task<byte[]> ResponseAsync(string url)
         {
-            return Task.FromResult(_results.TryGetValue(url, out var response) ? response.Buffer : null);
+            var responseTcs = _responseTcs.GetOrAdd(url, x => new TimeoutTaskCompletionSource<byte[]>());
+            var response = await responseTcs.Task;
+            return response;
         }
 
-        public async Task WaitForNavigateAsync()
+        public async Task WaitForVisibleAsync()
         {
-            var tcs = new TimeoutTaskCompletionSource<bool>();
-            _navigationTcs.Add(tcs);
-            await tcs.Task;
+            var visibleTcs = new TimeoutTaskCompletionSource<bool>();
+            _visibleTcs.Add(visibleTcs);
+            await visibleTcs.Task;
         }
 
         #endregion
 
         #region Overrides of WebViewClient
-        
+
         public override void OnPageCommitVisible(WebView view, string url)
         {
-            while (_navigationTcs.TryTake(out var navigationTcs))
+            while (_visibleTcs.TryTake(out var navigationTcs))
             {
                 navigationTcs.TrySetResult(true);
             }
@@ -66,49 +90,15 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
-            try
+            switch (BrowserViewFilter.GetState(request.Url.Host))
             {
-                try
-                {
-                    if (request.Method != "GET") return base.ShouldInterceptRequest(view, request);
-                    if (_results.TryGetValue(request.Url.ToString(), out var result)) return result.ToWebViewResponse();
-                    var http = WebRequest.CreateHttp(request.Url.ToString());
-                    http.Method = request.Method;
-                    http.CopyCookies(CookieManager.Instance);
-                    http.CopyHeaders(request.RequestHeaders);
-                    return CacheAsync((HttpWebResponse) http.GetResponse(), request.Url.ToString()).Result;
-                }
-                catch (WebException ex) when (ex.Response is HttpWebResponse response)
-                {
-                    var statusCode = (int) response.StatusCode;
-                    if (statusCode >= 300 && statusCode < 400) return base.ShouldInterceptRequest(view, request);
-                    return CacheAsync(response, request.Url.ToString()).Result;
-                }
-                catch (WebException)
-                {
-                    return base.ShouldInterceptRequest(view, request);
-                }
+                case FilterState.Block:
+                    return new WebResourceResponse("text/plain", "UTF-8", null);
+                case FilterState.Cache:
+                    return Cache(request.Method, request.Url.ToString(), request.RequestHeaders);
+                default:
+                    return null;
             }
-            catch (ObjectDisposedException)
-            {
-                return null;
-            }
-        }
-
-        public override bool ShouldOverrideUrlLoading(WebView view, IWebResourceRequest request)
-        {
-            _results.TryRemove(request.Url.ToString(), out _);
-            return false;
-        }
-
-        #endregion
-
-        #region Overrides of Object
-
-        protected override void Dispose(bool disposing)
-        {
-            if (!disposing) return;
-            while (_navigationTcs.TryTake(out var navigationTcs)) navigationTcs.TrySetException(new Exception());
         }
 
         #endregion

@@ -6,9 +6,9 @@ namespace App.Core.Shared
 {
     public class TimeoutTaskCompletionSource<T> : TaskCompletionSource<T>
     {
-        public TimeoutTaskCompletionSource(int timeoutInSeconds = 30)
+        public TimeoutTaskCompletionSource()
         {
-            Tasks.Task.Delay(TimeSpan.FromSeconds(timeoutInSeconds)).ContinueWith(t => TrySetCanceled());
+            Tasks.Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(t => TrySetCanceled());
         }
     }
 }
