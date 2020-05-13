@@ -10,6 +10,12 @@ using App.Platform.Android.Server;
 
 namespace App.Platform.Android
 {
+    // TODO: Cleanup client code, callback/activity/utilities code..
+    // TODO: Service connection can be lost. Reconnect and fire * action event.
+
+    // TODO: Base64'ing on different thread to avoid locking the UI thread?
+    // TODO: Batch operations are horrendously slow... consider batch APIs.
+    // TODO: On activity kill, service is also killed.
     [Activity(Label = "@string/app_name", LaunchMode = LaunchMode.SingleInstance, MainLauncher = true, Theme = "@android:style/Theme.NoTitleBar", ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
     public class Activity : global::Android.App.Activity
     {
@@ -32,14 +38,7 @@ namespace App.Platform.Android
         {
             base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.Main);
-            _ = CreateAsync();
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-            _server?.Dispose();
-            _core?.Dispose();
+            _ = CreateAsync(); // TODO: Synchronous please.
         }
 
         public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent e)

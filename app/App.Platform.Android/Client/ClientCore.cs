@@ -12,7 +12,6 @@ namespace App.Platform.Android.Client
     public class ClientCore : Java.Lang.Object
     {
         private readonly Bridge _bridge;
-        private readonly Callback _callback;
 
         #region Constructor
 
@@ -29,8 +28,7 @@ namespace App.Platform.Android.Client
 
         private ClientCore(Activity activity, IServerCore server, WebView view)
         {
-            _callback = new Callback(activity, view);
-            _bridge = new Bridge(_callback, new BasePlugin(activity, server));
+            _bridge = new Bridge(new Callback(activity, view), new BasePlugin(activity, server));
             Initialize(view);
         }
 
@@ -49,7 +47,7 @@ namespace App.Platform.Android.Client
         [JavascriptInterface]
         public void FromJavascript(string json)
         {
-            _ = _bridge?.RequestAsync(json);
+            _ = _bridge.RequestAsync(json);
         }
 
         public void OnBackButton()
@@ -60,16 +58,6 @@ namespace App.Platform.Android.Client
         public async Task SocketAsync(JToken model)
         {
             await _bridge.EventAsync("socket", model);
-        }
-
-        #endregion
-
-        #region Overrides of Object
-
-        protected override void Dispose(bool disposing)
-        {
-            if (!disposing) return;
-            _callback.Dispose();
         }
 
         #endregion

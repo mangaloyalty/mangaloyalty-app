@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Net;
 using Android.Webkit;
 
-namespace App.Platform.Android.Server.Extensions
+namespace App.Platform.Android.Server.Plugins.Browser.Extensions
 {
     public static class HttpWebRequestExtensions
     {
@@ -44,8 +44,8 @@ namespace App.Platform.Android.Server.Extensions
                         request.Host = value;
                         break;
                     case "if-modified-since":
-                        if (!DateTime.TryParse(value, CultureInfo.InvariantCulture.DateTimeFormat, DateTimeStyles.None, out var ifModifiedSince)) continue;
-                        request.IfModifiedSince = ifModifiedSince;
+                        break;
+                    case "if-none-match":
                         break;
                     case "range":
                         break;
