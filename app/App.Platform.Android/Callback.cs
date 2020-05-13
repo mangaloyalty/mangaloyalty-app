@@ -27,15 +27,15 @@ namespace App.Platform.Android
             _view.AddJavascriptInterface(this, _token);
         }
 
-        private void EvaluateJavascript(string run)
+        private void EvaluateJavascript(string run, TaskCompletionSource<JToken> tcs)
         {
             try
             {
                 _view.EvaluateJavascript(run, null);
             }
-            catch (ObjectDisposedException)
+            catch (Exception ex)
             {
-                return;
+                tcs.TrySetException(ex);
             }
         }
 
@@ -85,7 +85,7 @@ namespace App.Platform.Android
 
             // Initialize the script.
             var run = Script.Replace("$id", id).Replace("$script", script).Replace("$token", _token);
-            await _context.RunAsync(() => EvaluateJavascript(run));
+            await _context.RunAsync(() => EvaluateJavascript(run, tcs));
             return await tcs.Task;
         }
 
@@ -93,21 +93,10 @@ namespace App.Platform.Android
 
         #region Script
 
-        private const string Script = @"Promise.resolve($script).then((value) => {
-            $token.resolve($id, JSON.stringify(value));
-        }, () => {
-            $token.reject($id);
-        });";
-
-        #endregion
-
-        #region Overrides of Object
-
-        protected override void Dispose(bool disposing)
-        {
-            if (!disposing) return;
-            while (_receiverTcs.TryTake(out var receiverTcs)) receiverTcs.TrySetException(new Exception());
-        }
+        private const string Script = @"(function _$token() {
+          if (document.readyState === 'loading') return document.addEventListener('DOMContentLoaded', _$token);
+          setTimeout(() => Promise.resolve($script).then(r => $token.resolve($id, JSON.stringify(r)), () => $token.reject($id)), 0);
+        })();";
 
         #endregion
     }

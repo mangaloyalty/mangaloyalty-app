@@ -69,6 +69,8 @@
     <Compile Include="Server\Interfaces\IServerCore.cs" />
     <Compile Include="Server\Interfaces\IServerCoreListener.cs" />
     <Compile Include="Server\Plugins\BasePlugin.cs" />
+    <Compile Include="Server\Plugins\Browser\BrowserViewFilter.cs" />
+    <Compile Include="Server\Plugins\Browser\Enumerators\FilterState.cs" />
     <Compile Include="Server\Plugins\SocketPlugin.cs" />
     <Compile Include="Server\Receivers\BootCompletedReceiver.cs" />
     <Compile Include="Server\Receivers\MyPackageReplacedReceiver.cs" />
@@ -80,9 +82,8 @@
     <Compile Include="Callback.cs" />
     <Compile Include="Activity.cs" />
     <Compile Include="Server\ServerService.cs" />
-    <Compile Include="Server\Plugins\Browser\BrowserResponse.cs" />
     <Compile Include="Server\Plugins\Browser\BrowserView.cs" />
-    <Compile Include="Server\Extensions\HttpWebRequestExtensions.cs" />
+    <Compile Include="Server\Plugins\Browser\Extensions\HttpWebRequestExtensions.cs" />
     <Compile Include="Server\Plugins\Browser\BrowserViewClient.cs" />
     <Compile Include="Server\Plugins\BrowserPlugin.cs" />
     <Compile Include="Client\Plugins\BasePlugin.cs" />

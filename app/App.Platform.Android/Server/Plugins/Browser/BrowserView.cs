@@ -25,7 +25,6 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         private void Initialize()
         {
-            _view.ClearCache(true);
             _view.Settings.JavaScriptEnabled = true;
             _view.Settings.MixedContentMode = MixedContentHandling.CompatibilityMode;
             _view.Settings.UserAgentString = GetDesktopAgent(_view.Settings.UserAgentString);
@@ -37,18 +36,18 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         #region Constructor
 
-        private BrowserView(Context context, ServerCore core, string viewId)
+        private BrowserView(Context context)
         {
             _context = context;
             _view = new WebView(context);
-            _viewClient = new BrowserViewClient(core, viewId);
+            _viewClient = new BrowserViewClient();
             _viewScript = new Callback(context, _view);
             Initialize();
         }
 
-        public static async Task<BrowserView> CreateAsync(Context context, ServerCore core, string viewId)
+        public static async Task<BrowserView> CreateAsync(Context context)
         {
-            return await context.RunAsync(() => new BrowserView(context, core, viewId));
+            return await context.RunAsync(() => new BrowserView(context));
         }
 
         #endregion
@@ -57,13 +56,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public async Task DestroyAsync()
         {
-            await _context.RunAsync(() =>
-            {
-                _viewScript.Dispose();
-                _viewClient.Dispose();
-                _view.Destroy();
-                _view.Dispose();
-            });
+            await _context.RunAsync(() => _view.Destroy());
         }
 
         public async Task<JToken> EvaluateAsync(string invoke)
@@ -73,9 +66,9 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public async Task NavigateAsync(string url)
         {
-            var task = WaitForNavigateAsync();
+            var navigateTask = WaitForNavigateAsync();
             await _context.RunAsync(() => _view.LoadUrl(url));
-            await task;
+            await navigateTask;
         }
 
         public async Task<byte[]> ResponseAsync(string url)
@@ -85,7 +78,8 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public async Task WaitForNavigateAsync()
         {
-            await _viewClient.WaitForNavigateAsync();
+            await _viewClient.WaitForVisibleAsync();
+            await _viewScript.EvaluateAsync(string.Empty);
         }
 
         #endregion
