@@ -1,11 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Webkit;
 using App.Core;
 using App.Platform.Android.Client.Plugins;
+using App.Platform.Android.Server;
 using App.Platform.Android.Server.Interfaces;
 using Java.Interop;
 using Newtonsoft.Json.Linq;
@@ -14,8 +14,9 @@ namespace App.Platform.Android.Client
 {
     public class ClientCore : Java.Lang.Object, IServerCoreListener, IServiceConnection
     {
+        private readonly Activity _activity;
         private readonly Bridge _bridge;
-        private IServerCore _server;
+        private TaskCompletionSource<IServerCore> _connectionTcs;
 
         #region Constructor
 
@@ -32,7 +33,9 @@ namespace App.Platform.Android.Client
 
         public ClientCore(Activity activity, WebView view)
         {
+            _activity = activity;
             _bridge = new Bridge(new Callback(activity, view), new BasePlugin(activity, this));
+            _connectionTcs = new TaskCompletionSource<IServerCore>();
             Initialize(view);
         }
 
@@ -42,9 +45,9 @@ namespace App.Platform.Android.Client
 
         public async Task<JToken> ForwardAsync(JToken model)
         {
-            var responseTask = _server?.RequestAsync(model);
-            if (responseTask == null) throw new Exception();
-            return await responseTask;
+            var server = await _connectionTcs.Task;
+            var response = await server.RequestAsync(model);
+            return response;
         }
 
         [Export("fromJs")]
@@ -57,6 +60,18 @@ namespace App.Platform.Android.Client
         public void OnBackButton()
         {
             _ = _bridge.EventAsync("backbutton");
+        }
+
+        public void OnStart()
+        {
+            _activity.BindService(new Intent(_activity, typeof(ServerService)), this, Bind.None);
+        }
+
+        public void OnStop()
+        {
+            _connectionTcs.TrySetCanceled();
+            _connectionTcs = new TaskCompletionSource<IServerCore>();
+            _activity.UnbindService(this);
         }
 
         #endregion
@@ -74,13 +89,15 @@ namespace App.Platform.Android.Client
 
         public void OnServiceConnected(ComponentName name, IBinder service)
         {
-            _server = service as IServerCore;
-            _server?.ListenAsync(this).ContinueWith(t => SocketAsync(new JObject(new JProperty("type", "SocketConnect"))));
+            if (!(service is IServerCore server)) return;
+            _connectionTcs.TrySetResult(server);
+            server.ListenAsync(this).ContinueWith(t => SocketAsync(new JObject(new JProperty("type", "SocketConnect"))));
         }
 
         public void OnServiceDisconnected(ComponentName name)
         {
-            _server = null;
+            _connectionTcs.TrySetCanceled();
+            _connectionTcs = new TaskCompletionSource<IServerCore>();
         }
 
         #endregion

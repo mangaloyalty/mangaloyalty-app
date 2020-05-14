@@ -1,5 +1,4 @@
 ﻿using Android.App;
-using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
@@ -31,13 +30,13 @@ namespace App.Platform.Android
         protected override void OnStart()
         {
             base.OnStart();
-            BindService(new Intent(this, typeof(ServerService)), _client, Bind.None);
+            _client.OnStart();
         }
 
         protected override void OnStop()
         {
             base.OnStop();
-            UnbindService(_client);
+            _client.OnStop();
         }
 
         public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent e)
