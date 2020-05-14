@@ -76,7 +76,7 @@
     <Compile Include="Server\Receivers\NotificationReceiver.cs" />
     <Compile Include="Server\ServerCore.cs" />
     <Compile Include="Server\ServerCoreBinder.cs" />
-    <Compile Include="Utilities.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Callback.cs" />
     <Compile Include="Activity.cs" />
     <Compile Include="Server\ServerService.cs" />

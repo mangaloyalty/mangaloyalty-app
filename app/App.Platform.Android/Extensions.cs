@@ -6,7 +6,7 @@ using App.Core.Shared;
 
 namespace App.Platform.Android
 {
-    public static class Utilities
+    public static class Extensions
     {
         #region Abstracts
 
