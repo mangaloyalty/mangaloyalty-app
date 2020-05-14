@@ -20,8 +20,7 @@ namespace App.Platform.Android.Client.Plugins
 
         public void HideSplashScreen()
         {
-            var view = _activity.FindViewById(Resource.Id.splashScreen);
-            view?.Post(() => view.Visibility = ViewStates.Gone);
+            _activity.RunOnUiThread(() => _activity.FindViewById(Resource.Id.splashScreen).Visibility = ViewStates.Gone);
         }
 
         public void MinimizeApp()
