@@ -47,32 +47,32 @@ namespace App.Platform.Android.Server.Plugins
 
         public async Task DestroyAsync(BrowserDataModel model)
         {
-            if (!_views.TryRemove(model.Id, out var view)) return;
+            if (!_views.TryRemove(model.Id, out var view)) throw new Exception();
             await view.DestroyAsync();
         }
 
         public async Task<JToken> EvaluateAsync(BrowserEvaluateDataModel model)
         {
-            if (!_views.TryGetValue(model.Id, out var view)) return null;
+            if (!_views.TryGetValue(model.Id, out var view)) throw new Exception();
             return await view.EvaluateAsync(model.Invoke);
         }
 
         public async Task NavigateAsync(BrowserNavigateDataModel model)
         {
-            if (!_views.TryGetValue(model.Id, out var view)) return;
+            if (!_views.TryGetValue(model.Id, out var view)) throw new Exception();
             await view.NavigateAsync(model.Url);
         }
 
         public async Task<string> ResponseAsync(BrowserResponseDataModel model)
         {
-            if (!_views.TryGetValue(model.Id, out var view)) return null;
+            if (!_views.TryGetValue(model.Id, out var view)) throw new Exception();
             var buffer = await view.ResponseAsync(model.Url);
             return Convert.ToBase64String(buffer);
         }
 
         public async Task WaitForNavigateAsync(BrowserDataModel model)
         {
-            if (!_views.TryGetValue(model.Id, out var view)) return;
+            if (!_views.TryGetValue(model.Id, out var view)) throw new Exception();
             await view.WaitForNavigateAsync();
         }
 

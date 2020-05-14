@@ -26,19 +26,7 @@ namespace App.Platform.Android
         {
             _view.AddJavascriptInterface(this, _token);
         }
-
-        private void EvaluateJavascript(string run, TaskCompletionSource<JToken> tcs)
-        {
-            try
-            {
-                _view.EvaluateJavascript(run, null);
-            }
-            catch (Exception ex)
-            {
-                tcs.TrySetException(ex);
-            }
-        }
-
+        
         #endregion
 
         #region Constructor
@@ -80,22 +68,22 @@ namespace App.Platform.Android
         {
             // Initialize the identifier.
             var id = Interlocked.Increment(ref _previousId).ToString();
-            var tcs = new TimeoutTaskCompletionSource<JToken>();
-            if (!_receiverTcs.TryAdd(id, tcs)) return null;
+            var receiverTcs = new TimeoutTaskCompletionSource<JToken>();
+            if (!_receiverTcs.TryAdd(id, receiverTcs)) return null;
 
             // Initialize the script.
-            var run = Script.Replace("$id", id).Replace("$script", script).Replace("$token", _token);
-            await _context.RunAsync(() => EvaluateJavascript(run, tcs));
-            return await tcs.Task;
+            var tracker = Script.Replace("$i", id).Replace("$s", script).Replace("$t", _token);
+            await _context.RunAsync(() => _view.EvaluateJavascript(tracker, null));
+            return await receiverTcs.Task;
         }
 
         #endregion
 
         #region Script
 
-        private const string Script = @"(function _$token() {
-          if (document.readyState === 'loading') return document.addEventListener('DOMContentLoaded', _$token);
-          setTimeout(() => Promise.resolve($script).then(r => $token.resolve($id, JSON.stringify(r)), () => $token.reject($id)), 0);
+        private const string Script = @"(function _$t() {
+          if (document.readyState === 'loading') return document.addEventListener('DOMContentLoaded', _$t);
+          setTimeout(() => Promise.resolve($s).then(v => $t.resolve($i, JSON.stringify(v)), () => $t.reject($i)), 0);
         })();";
 
         #endregion
