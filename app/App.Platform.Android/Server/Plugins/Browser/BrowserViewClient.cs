@@ -1,57 +1,36 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Android.Webkit;
 using App.Core.Shared;
 using App.Platform.Android.Server.Plugins.Browser.Enumerators;
-using App.Platform.Android.Server.Plugins.Browser.Extensions;
 
 namespace App.Platform.Android.Server.Plugins.Browser
 {
     public class BrowserViewClient : WebViewClient
     {
+        private static readonly HttpClient HttpClient;
+        private readonly BrowserHttpCache _cache;
         private readonly ConcurrentDictionary<string, TimeoutTaskCompletionSource<byte[]>> _responseTcs;
         private readonly ConcurrentBag<TimeoutTaskCompletionSource<bool>> _visibleTcs;
 
         #region Abstracts
 
-        private WebResourceResponse Cache(string method, string url, IDictionary<string, string> headers)
+        private async Task<WebResourceResponse> CacheAsync(string method, string url, IDictionary<string, string> headers)
         {
             try
             {
-                // Initialize the request.
-                var request = WebRequest.CreateHttp(url);
-                request.CopyCookies(CookieManager.Instance);
-                request.CopyHeaders(headers);
-                request.Method = method;
-
-                // Initialize the response.
-                using var memoryStream = new MemoryStream();
-                using var response = (HttpWebResponse) request.GetResponse();
-                using var responseStream = response.GetResponseStream();
-                responseStream?.CopyTo(memoryStream);
-
-                // Initialize the response buffer.
-                var responseBuffer = memoryStream.ToArray();
+                if (method != "GET") return null;
                 var responseTcs = _responseTcs.GetOrAdd(url, x => new TimeoutTaskCompletionSource<byte[]>());
-                responseTcs.TrySetResult(responseBuffer);
-
-                // Return the response.
-                var contentEncoding = response.ContentEncoding;
-                var contentType = Regex.Replace(response.ContentType, @"\s*;(.*)$", string.Empty);
-                var responseHeaders = response.Headers.AllKeys.ToDictionary(x => x, x => response.Headers[x]);
-                var statusCode = (int) response.StatusCode;
-                var statusDescription = response.StatusDescription;
-                var stream = new MemoryStream(responseBuffer);
-                return new WebResourceResponse(contentType, contentEncoding, statusCode, statusDescription, responseHeaders, stream);
+                var response = await _cache.GetAsync(url, headers);
+                responseTcs.TrySetResult(response.Buffer);
+                return response.ToResourceResponse();
             }
-            catch (WebException)
+            catch (Exception)
             {
-                return null;
+                return new WebResourceResponse("text/plain", "UTF-8", null);
             }
         }
 
@@ -61,8 +40,18 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public BrowserViewClient()
         {
+            _cache = new BrowserHttpCache(HttpClient);
             _responseTcs = new ConcurrentDictionary<string, TimeoutTaskCompletionSource<byte[]>>();
             _visibleTcs = new ConcurrentBag<TimeoutTaskCompletionSource<bool>>();
+        }
+
+        static BrowserViewClient()
+        {
+            HttpClient = new HttpClient(new Xamarin.Android.Net.AndroidClientHandler
+            {
+                ConnectTimeout = TimeSpan.FromSeconds(5),
+                ReadTimeout = TimeSpan.FromSeconds(5)
+            });
         }
 
         #endregion
@@ -105,7 +94,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
                 case FilterState.Block:
                     return new WebResourceResponse("text/plain", "UTF-8", null);
                 case FilterState.Cache:
-                    return Cache(request.Method, request.Url.ToString(), request.RequestHeaders);
+                    return CacheAsync(request.Method, request.Url.ToString(), request.RequestHeaders).Result;
                 default:
                     return null;
             }
