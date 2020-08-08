@@ -7,6 +7,10 @@ export class SocketManager implements sv.ISocketManager {
     throw new Error();
   }
 
+  removeEventListener() {
+    throw new Error();
+  }
+
   emit(action: sv.ISocketAction) {
     this._previous = this._previous.then(() => window.oni?.sendAsync('socket.emitAsync', action));
   }
