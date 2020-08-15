@@ -2,7 +2,6 @@
 {
     public interface IBasePlugin
     {
-        IProxyPlugin Proxy { get; }
         IShellPlugin Shell { get; }
     }
 }

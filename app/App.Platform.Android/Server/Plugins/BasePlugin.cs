@@ -8,11 +8,10 @@ namespace App.Platform.Android.Server.Plugins
     {
         #region Constructor
 
-        public BasePlugin(Context context, ServerCore core, TaskCompletionSource<bool> initTcs)
+        public BasePlugin(Context context, TaskCompletionSource<bool> initTcs)
         {
             Browser = new BrowserPlugin(context, initTcs);
             Resource = new ResourcePlugin(context);
-            Socket = new SocketPlugin(core);
             Trace = new TracePlugin(context);
         }
 
@@ -22,7 +21,6 @@ namespace App.Platform.Android.Server.Plugins
 
         public IBrowserPlugin Browser { get; }
         public IResourcePlugin Resource { get; }
-        public ISocketPlugin Socket { get; }
         public ITracePlugin Trace { get; }
 
         #endregion
