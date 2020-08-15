@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Android.Webkit;
+using App.Core.Shared;
 using App.Platform.Android.Server.Plugins.Browser.Extensions;
 
 namespace App.Platform.Android.Server.Plugins.Browser
@@ -11,7 +12,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
     {
         private readonly HttpClient _client;
         private readonly IDictionary<string, string> _headers;
-        private readonly TaskCompletionSource<BrowserHttpResponse> _responseTcs;
+        private readonly TimeoutTaskCompletionSource<BrowserHttpResponse> _responseTcs;
         private readonly string _url;
 
         #region Abstracts
@@ -28,13 +29,14 @@ namespace App.Platform.Android.Server.Plugins.Browser
                     message.CopyHeaders(_headers, "If-Modified-Since", "If-None-Match");
 
                     // Initialize the response.
-                    using var response = await _client.SendAsync(message);
+                    using var response = await _client.SendAsync(message, _responseTcs.CancellationToken);
                     using var responseContent = response.Content;
                     var responseBuffer = await responseContent.ReadAsByteArrayAsync();
                     _responseTcs.TrySetResult(BrowserHttpResponse.Create(responseBuffer, responseContent, response));
                 }
                 catch (Exception)
                 {
+                    if (_responseTcs.Task.IsCompleted) return;
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
@@ -48,7 +50,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
         {
             _client = client;
             _headers = headers;
-            _responseTcs = new TaskCompletionSource<BrowserHttpResponse>();
+            _responseTcs = new TimeoutTaskCompletionSource<BrowserHttpResponse>();
             _url = url;
         }
 

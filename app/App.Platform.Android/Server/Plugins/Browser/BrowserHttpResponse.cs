@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Android.Webkit;
+using App.Platform.Android.Server.Plugins.Browser.Extensions;
 
 namespace App.Platform.Android.Server.Plugins.Browser
 {
@@ -30,11 +31,11 @@ namespace App.Platform.Android.Server.Plugins.Browser
         {
             var contentEncoding = content.Headers.ContentEncoding.FirstOrDefault();
             var contentType = content.Headers.ContentType.MediaType;
-            var headers = message.Headers.ToDictionary(x => x.Key, x => message.Headers.GetValues(x.Key).First());
+            var headers = message.Headers.ToDictionary("Cache-Control", "Expires", "ETag", "Last-Modified", "Pragma");
             var statusCode = message.StatusCode;
             return new BrowserHttpResponse(buffer, contentEncoding, contentType, headers, statusCode);
         }
-
+        
         #endregion
 
         #region Methods
