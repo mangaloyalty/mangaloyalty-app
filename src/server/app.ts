@@ -11,23 +11,17 @@ sv.settings.actionWaitTimeout = 25000;
 // Initialize the system.
 sv.bootAsync().then((router) => {
   window.oni?.addEventListener('request', async (model: any) => {
-    try {
-      const result = await router.execAsync(model.method, model.path, new api.Context(model.context));
-      if (Buffer.isBuffer(result.content)) {
-        const content64 = result.content.toString('base64');
-        const headers = result.headers;
-        const statusCode = result.statusCode;
-        return {content64, headers, statusCode};
-      } else {
-        const content = result.content;
-        const headers = result.headers;
-        const statusCode = result.statusCode;
-        return {content, headers, statusCode};
-      }
-    } catch (error) {
-      const content = String(error && error.stack);
-      const statusCode = 500;
-      return {content, statusCode};
+    const result = await router.execAsync(model.method, model.path, new api.Context(model.context));
+    if (Buffer.isBuffer(result.content)) {
+      const content64 = result.content.toString('base64');
+      const headers = result.headers;
+      const statusCode = result.statusCode;
+      return {content64, headers, statusCode};
+    } else {
+      const content = result.content;
+      const headers = result.headers;
+      const statusCode = result.statusCode;
+      return {content, headers, statusCode};
     }
   });
 });

@@ -54,10 +54,10 @@ namespace App.Platform.Android
 
         [Export("reject")]
         [JavascriptInterface]
-        public void ReceiveReject(string id)
+        public void ReceiveReject(string id, string message)
         {
             if (!_receiverTcs.TryRemove(id, out var receiverTcs)) return;
-            receiverTcs.TrySetCanceled();
+            receiverTcs.TrySetException(new Exception(message));
         }
 
         #endregion
@@ -83,7 +83,7 @@ namespace App.Platform.Android
 
         private const string Script = @"(function _$t() {
           if (document.readyState === 'loading') return document.addEventListener('DOMContentLoaded', _$t);
-          setTimeout(() => Promise.resolve($s).then(v => $t.resolve($i, JSON.stringify(v)), () => $t.reject($i)), 0);
+          setTimeout(() => Promise.resolve($s).then(v => $t.resolve($i, JSON.stringify(v)), e => $t.reject($i, String(e && e.stack || e))), 0);
         })();";
 
         #endregion
