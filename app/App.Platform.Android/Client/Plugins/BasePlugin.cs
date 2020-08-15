@@ -6,9 +6,8 @@ namespace App.Platform.Android.Client.Plugins
     {
         #region Constructor
 
-        public BasePlugin(Activity activity, ClientCore core)
+        public BasePlugin(Activity activity)
         {
-            Proxy = new ProxyPlugin(core);
             Shell = new ShellPlugin(activity);
         }
 
@@ -16,7 +15,6 @@ namespace App.Platform.Android.Client.Plugins
 
         #region Implementation of ICorePlugin
 
-        public IProxyPlugin Proxy { get; }
         public IShellPlugin Shell { get; }
 
         #endregion

@@ -27,18 +27,6 @@ namespace App.Platform.Android
             _client = new ClientCore(this, FindViewById<WebView>(Resource.Id.webView));
         }
         
-        protected override void OnStart()
-        {
-            base.OnStart();
-            _client.OnStart();
-        }
-
-        protected override void OnStop()
-        {
-            base.OnStop();
-            _client.OnStop();
-        }
-
         public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent e)
         {
             if (keyCode != Keycode.Back) return base.OnKeyDown(keyCode, e);

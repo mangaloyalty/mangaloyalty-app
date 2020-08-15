@@ -11,6 +11,7 @@ namespace App.Platform.Android.Server
     {
         private NotificationChannel _channel;
         private ServerCore _core;
+        private ServerListener _listener;
         private WebView _view;
 
         #region Abstracts
@@ -65,18 +66,20 @@ namespace App.Platform.Android.Server
 
         public override IBinder OnBind(Intent intent)
         {
-            return new ServerCoreBinder(_core);
+            return null;
         }
 
         public override void OnCreate()
         {
             _view = new WebView(this);
             _core = new ServerCore(this, _view);
+            _listener = new ServerListener(_core);
         }
 
         public override void OnDestroy()
         {
             UnbindForeground();
+            _listener?.Dispose();
             _view?.Destroy();
         }
 
