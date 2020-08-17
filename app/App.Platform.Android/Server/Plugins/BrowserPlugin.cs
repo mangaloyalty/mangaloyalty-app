@@ -66,8 +66,8 @@ namespace App.Platform.Android.Server.Plugins
         public async Task<string> ResponseAsync(BrowserResponseDataModel model)
         {
             if (!_views.TryGetValue(model.Id, out var view)) throw new Exception();
-            var buffer = await view.ResponseAsync(model.Url);
-            return Convert.ToBase64String(buffer);
+            var response = await view.ResponseAsync(model.Url);
+            return Convert.ToBase64String(response.Buffer);
         }
 
         public async Task WaitForNavigateAsync(BrowserDataModel model)
