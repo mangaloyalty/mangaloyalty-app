@@ -75,6 +75,7 @@ namespace App.Platform.Android.Server
             catch (Exception ex)
             {
                 context.Response.StatusCode = 500;
+                context.Response.AddHeader("Access-Control-Allow-Origin", "*");
                 await using var os = context.Response.OutputStream;
                 await os.WriteAsync(Encoding.UTF8.GetBytes(ex.Message));
                 await os.FlushAsync();

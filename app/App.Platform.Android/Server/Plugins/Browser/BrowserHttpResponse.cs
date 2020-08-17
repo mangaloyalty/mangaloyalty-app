@@ -18,7 +18,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         #region Constructor
 
-        public BrowserHttpResponse(byte[] buffer, string contentEncoding, string contentType, IDictionary<string, string> headers, HttpStatusCode statusCode)
+        private BrowserHttpResponse(byte[] buffer, string contentEncoding, string contentType, IDictionary<string, string> headers, HttpStatusCode statusCode)
         {
             _buffer = buffer;
             _contentEncoding = contentEncoding;
@@ -29,8 +29,8 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public static BrowserHttpResponse Create(byte[] buffer, HttpContent content, HttpResponseMessage message)
         {
-            var contentEncoding = content.Headers.ContentEncoding.FirstOrDefault();
-            var contentType = content.Headers.ContentType.MediaType;
+            var contentEncoding = content.Headers.ContentEncoding?.FirstOrDefault();
+            var contentType = content.Headers.ContentType?.MediaType ?? "application/octet-stream";
             var headers = message.Headers.ToDictionary("Cache-Control", "Expires", "ETag", "Last-Modified", "Pragma");
             var statusCode = message.StatusCode;
             return new BrowserHttpResponse(buffer, contentEncoding, contentType, headers, statusCode);
