@@ -34,9 +34,10 @@ namespace App.Platform.Android.Server.Plugins.Browser
                     var responseBuffer = await responseContent.ReadAsByteArrayAsync();
                     _responseTcs.TrySetResult(BrowserHttpResponse.Create(responseBuffer, responseContent, response));
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     if (_responseTcs.Task.IsCompleted) return;
+                    Console.WriteLine(ex);
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }

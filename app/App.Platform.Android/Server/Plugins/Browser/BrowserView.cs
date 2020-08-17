@@ -71,7 +71,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
             await navigateTask;
         }
 
-        public async Task<byte[]> ResponseAsync(string url)
+        public async Task<BrowserHttpResponse> ResponseAsync(string url)
         {
             return await _viewClient.ResponseAsync(url);
         }

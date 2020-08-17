@@ -13,7 +13,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
     {
         private static readonly HttpClient HttpClient;
         private readonly BrowserHttpCache _cache;
-        private readonly ConcurrentDictionary<string, TimeoutTaskCompletionSource<byte[]>> _responseTcs;
+        private readonly ConcurrentDictionary<string, TimeoutTaskCompletionSource<BrowserHttpResponse>> _responseTcs;
         private readonly ConcurrentBag<TimeoutTaskCompletionSource<bool>> _visibleTcs;
 
         #region Abstracts
@@ -22,15 +22,16 @@ namespace App.Platform.Android.Server.Plugins.Browser
         {
             try
             {
-                if (method != "GET") return null;
-                var responseTcs = _responseTcs.GetOrAdd(url, x => new TimeoutTaskCompletionSource<byte[]>());
+                if (!string.Equals(method, "GET", StringComparison.InvariantCultureIgnoreCase)) return null;
+                var responseTcs = _responseTcs.GetOrAdd(url, x => new TimeoutTaskCompletionSource<BrowserHttpResponse>());
                 var response = await _cache.GetAsync(url, headers);
-                responseTcs.TrySetResult(response.Buffer);
+                responseTcs.TrySetResult(response);
                 return response.ToResourceResponse();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return new WebResourceResponse("text/plain", "UTF-8", null);
+                Console.WriteLine(ex);
+                return new WebResourceResponse("text/plain", null, null);
             }
         }
 
@@ -41,7 +42,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
         public BrowserViewClient()
         {
             _cache = new BrowserHttpCache(HttpClient);
-            _responseTcs = new ConcurrentDictionary<string, TimeoutTaskCompletionSource<byte[]>>();
+            _responseTcs = new ConcurrentDictionary<string, TimeoutTaskCompletionSource<BrowserHttpResponse>>();
             _visibleTcs = new ConcurrentBag<TimeoutTaskCompletionSource<bool>>();
         }
 
@@ -58,9 +59,9 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         #region Methods
 
-        public async Task<byte[]> ResponseAsync(string url)
+        public async Task<BrowserHttpResponse> ResponseAsync(string url)
         {
-            var responseTcs = _responseTcs.GetOrAdd(url, x => new TimeoutTaskCompletionSource<byte[]>());
+            var responseTcs = _responseTcs.GetOrAdd(url, x => new TimeoutTaskCompletionSource<BrowserHttpResponse>());
             var response = await responseTcs.Task;
             return response;
         }
@@ -92,7 +93,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
             switch (BrowserViewFilter.GetState(request.Url.Host))
             {
                 case FilterState.Block:
-                    return new WebResourceResponse("text/plain", "UTF-8", null);
+                    return new WebResourceResponse("text/plain", null, null);
                 case FilterState.Cache:
                     return CacheAsync(request.Method, request.Url.ToString(), request.RequestHeaders).Result;
                 default:
