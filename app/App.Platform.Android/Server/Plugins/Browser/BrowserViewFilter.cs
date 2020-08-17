@@ -18,11 +18,10 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
             // Initialize fanfox filters.
             if (Regex.IsMatch(host, @"^fanfox\.net$")) return FilterState.Allow;
-            if (Regex.IsMatch(host, @"^mangafox\.me$")) return FilterState.Allow;
             if (Regex.IsMatch(host, @"^static\.fanfox\.net$")) return FilterState.Allow;
-            if (Regex.IsMatch(host, @"^static\.mangafox\.me")) return FilterState.Allow;
             if (Regex.IsMatch(host, @"\.fanfox\.net$")) return FilterState.Cache;
             if (Regex.IsMatch(host, @"\.mangafox\.me$")) return FilterState.Cache;
+            if (Regex.IsMatch(host, @"\.mfcdn\.net")) return FilterState.Cache;
             return FilterState.Block;
         }
     }
