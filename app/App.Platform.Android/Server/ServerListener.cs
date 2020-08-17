@@ -24,11 +24,17 @@ namespace App.Platform.Android.Server
 
         private async Task ListenAsync()
         {
-            // TODO: Dispose?
             while (_listener.IsListening)
             {
-                var context = await _listener.GetContextAsync();
-                _ = Task.Run(() => ProcessAsync(context));
+                try
+                {
+                    var context = await _listener.GetContextAsync();
+                    _ = Task.Run(() => ProcessAsync(context));
+                }
+                catch (ObjectDisposedException)
+                {
+                    break;
+                }
             }
         }
 
