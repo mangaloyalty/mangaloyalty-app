@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using App.Platform.Android.Server.Extensions;
 using App.Platform.Android.Server.Models;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace App.Platform.Android.Server
 {
@@ -18,6 +18,7 @@ namespace App.Platform.Android.Server
 
         private void Initialize()
         {
+            _listener.Prefixes.Add("http://+:7783/");
             _listener.Start();
             Task.Factory.StartNew(ListenAsync, TaskCreationOptions.LongRunning);
         }
@@ -37,21 +38,22 @@ namespace App.Platform.Android.Server
                 }
             }
         }
-
+        
         private async Task ProcessAsync(HttpListenerContext context)
         {
+            if (!context.Request.IsLocal && !Debugger.IsAttached)
+            {
+                context.Response.StatusCode = 403;
+                context.Response.AddHeader("Access-Control-Allow-Origin", "*");
+                context.Response.Close();
+                return;
+            }
+
             try
             {
-                var ev = new JObject(
-                    new JProperty("method", context.Request.HttpMethod),
-                    new JProperty("path", context.Request.Url.LocalPath),
-                    new JProperty("context", new JObject(
-                        new JProperty("header", context.Request.Headers.ToJsonDictionary(true)),
-                        new JProperty("query", context.Request.QueryString.ToJsonDictionary())
-                    ))
-                );
-
-                var result = (await _core.RequestAsync(ev)).ToObject<RequestResult>();
+                var model = context.Request.ToModel();
+                var response = await _core.RequestAsync(model);
+                var result = response.ToObject<RequestResult>();
                 context.Response.StatusCode = result.StatusCode != 0 ? result.StatusCode : 200;
                 
                 if (result.Headers != null)
@@ -96,7 +98,6 @@ namespace App.Platform.Android.Server
         {
             _core = core;
             _listener = new HttpListener();
-            _listener.Prefixes.Add("http://+:7783/"); // TODO: Localhost-only!
             Initialize();
         }
 

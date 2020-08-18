@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\ClientCore.cs" />
+    <Compile Include="Server\Extensions\HttpListenerRequestExtensions.cs" />
     <Compile Include="Server\Extensions\NameValueCollectionExtensions.cs" />
     <Compile Include="Server\Plugins\BasePlugin.cs" />
     <Compile Include="Server\Plugins\Browser\BrowserHttpCache.cs" />
