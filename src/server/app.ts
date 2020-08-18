@@ -6,7 +6,6 @@ import * as sv from 'mangaloyalty-server';
 sv.core.browser = new app.BrowserManager();
 sv.core.resource = new app.ResourceManager();
 sv.core.trace = new app.TraceManager();
-sv.settings.actionWaitTimeout = 25000;
 
 // Initialize the system.
 sv.bootAsync().then((router) => {
