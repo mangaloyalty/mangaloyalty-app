@@ -70,9 +70,7 @@
     <Compile Include="Server\Plugins\BasePlugin.cs" />
     <Compile Include="Server\Plugins\Browser\BrowserHttpCache.cs" />
     <Compile Include="Server\Plugins\Browser\BrowserHttpRequest.cs" />
-    <Compile Include="Server\Plugins\Browser\BrowserViewFilter.cs" />
     <Compile Include="Server\Plugins\Browser\BrowserHttpResponse.cs" />
-    <Compile Include="Server\Plugins\Browser\Enumerators\FilterState.cs" />
     <Compile Include="Server\Plugins\Browser\Extensions\HttpRequestHeadersExtensions.cs" />
     <Compile Include="Server\Plugins\Browser\Extensions\HttpRequestMessageExtensions.cs" />
     <Compile Include="Server\Receivers\BootCompletedReceiver.cs" />

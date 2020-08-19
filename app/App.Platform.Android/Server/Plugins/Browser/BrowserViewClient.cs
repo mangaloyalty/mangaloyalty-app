@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Android.Webkit;
 using App.Core.Shared;
-using App.Platform.Android.Server.Plugins.Browser.Enumerators;
 
 namespace App.Platform.Android.Server.Plugins.Browser
 {
@@ -51,7 +50,8 @@ namespace App.Platform.Android.Server.Plugins.Browser
             HttpClient = new HttpClient(new Xamarin.Android.Net.AndroidClientHandler
             {
                 ConnectTimeout = TimeSpan.FromSeconds(5),
-                ReadTimeout = TimeSpan.FromSeconds(5)
+                ReadTimeout = TimeSpan.FromSeconds(5),
+                UseCookies = false
             });
         }
 
@@ -90,15 +90,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
-            switch (BrowserViewFilter.GetState(request.Url.Host))
-            {
-                case FilterState.Block:
-                    return new WebResourceResponse("text/plain", null, null);
-                case FilterState.Cache:
-                    return CacheAsync(request.Method, request.Url.ToString(), request.RequestHeaders).Result;
-                default:
-                    return null;
-            }
+            return CacheAsync(request.Method, request.Url.ToString(), request.RequestHeaders).Result;
         }
 
         #endregion
