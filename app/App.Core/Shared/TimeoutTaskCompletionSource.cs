@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
+using Tasks = System.Threading.Tasks;
 
 namespace App.Core.Shared
 {
@@ -8,11 +8,7 @@ namespace App.Core.Shared
     {
         public TimeoutTaskCompletionSource()
         {
-            var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            CancellationToken = cancellationSource.Token;
-            CancellationToken.Register(() => TrySetCanceled());
+            Tasks.Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(t => TrySetCanceled());
         }
-
-        public CancellationToken CancellationToken { get; }
     }
 }

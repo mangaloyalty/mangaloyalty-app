@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Android.Webkit;
-using App.Platform.Android.Server.Plugins.Browser.Extensions;
 
 namespace App.Platform.Android.Server.Plugins.Browser
 {
@@ -18,24 +18,15 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         #region Constructor
 
-        private BrowserHttpResponse(byte[] buffer, string contentEncoding, string contentType, IDictionary<string, string> headers, HttpStatusCode statusCode)
+        public BrowserHttpResponse(byte[] buffer, HttpContent content, HttpResponseMessage response)
         {
             _buffer = buffer;
-            _contentEncoding = contentEncoding;
-            _contentType = contentType;
-            _headers = headers;
-            _statusCode = statusCode;
+            _contentEncoding = content.Headers.ContentEncoding?.FirstOrDefault();
+            _contentType = content.Headers.ContentType?.MediaType ?? "application/octet-stream";
+            _headers = response.Headers.ToDictionary(x => x.Key, x => string.Join(",", x.Value), StringComparer.InvariantCultureIgnoreCase);
+            _statusCode = response.StatusCode;
         }
 
-        public static BrowserHttpResponse Create(byte[] buffer, HttpContent content, HttpResponseMessage message)
-        {
-            var contentEncoding = content.Headers.ContentEncoding?.FirstOrDefault();
-            var contentType = content.Headers.ContentType?.MediaType ?? "application/octet-stream";
-            var headers = message.Headers.ToDictionary("Cache-Control", "Expires", "ETag", "Last-Modified", "Pragma");
-            var statusCode = message.StatusCode;
-            return new BrowserHttpResponse(buffer, contentEncoding, contentType, headers, statusCode);
-        }
-        
         #endregion
 
         #region Methods

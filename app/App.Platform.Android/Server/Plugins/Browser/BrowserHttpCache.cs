@@ -25,7 +25,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public async Task<BrowserHttpResponse> GetAsync(string url, IDictionary<string, string> headers)
         {
-            return await _requests.GetOrAdd(url, x => BrowserHttpRequest.Create(_client, url, headers)).GetAsync();
+            return await _requests.GetOrAdd(url, x => new BrowserHttpRequest(_client, url)).GetAsync(headers);
         }
 
         #endregion
