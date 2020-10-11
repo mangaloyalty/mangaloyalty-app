@@ -71,8 +71,6 @@
     <Compile Include="Server\Plugins\Browser\BrowserHttpCache.cs" />
     <Compile Include="Server\Plugins\Browser\BrowserHttpRequest.cs" />
     <Compile Include="Server\Plugins\Browser\BrowserHttpResponse.cs" />
-    <Compile Include="Server\Plugins\Browser\Extensions\HttpRequestHeadersExtensions.cs" />
-    <Compile Include="Server\Plugins\Browser\Extensions\HttpRequestMessageExtensions.cs" />
     <Compile Include="Server\Receivers\BootCompletedReceiver.cs" />
     <Compile Include="Server\Receivers\MyPackageReplacedReceiver.cs" />
     <Compile Include="Server\Receivers\NotificationReceiver.cs" />

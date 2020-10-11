@@ -25,6 +25,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         private void Initialize()
         {
+            _view.Settings.CacheMode = CacheModes.NoCache;
             _view.Settings.JavaScriptEnabled = true;
             _view.Settings.MixedContentMode = MixedContentHandling.CompatibilityMode;
             _view.Settings.UserAgentString = GetDesktopAgent(_view.Settings.UserAgentString);
