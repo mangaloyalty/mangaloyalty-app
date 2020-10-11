@@ -10,20 +10,19 @@ namespace App.Platform.Android.Server.Plugins.Browser
 {
     public class BrowserViewClient : WebViewClient
     {
-        private static readonly HttpClient HttpClient;
-        private readonly BrowserHttpCache _cache;
+        private static readonly BrowserHttpCache Http;
         private readonly ConcurrentDictionary<string, TimeoutTaskCompletionSource<BrowserHttpResponse>> _responseTcs;
         private readonly ConcurrentBag<TimeoutTaskCompletionSource<bool>> _visibleTcs;
 
         #region Abstracts
 
-        private async Task<WebResourceResponse> CacheAsync(string method, string url, IDictionary<string, string> headers)
+        private async Task<WebResourceResponse> RequestAsync(string method, string url, IDictionary<string, string> headers)
         {
             try
             {
                 if (!string.Equals(method, "GET", StringComparison.InvariantCultureIgnoreCase)) return null;
                 var responseTcs = _responseTcs.GetOrAdd(url, x => new TimeoutTaskCompletionSource<BrowserHttpResponse>());
-                var response = await _cache.GetAsync(url, headers);
+                var response = await Http.GetAsync(url, headers);
                 responseTcs.TrySetResult(response);
                 return response.ToResourceResponse();
             }
@@ -40,19 +39,18 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public BrowserViewClient()
         {
-            _cache = new BrowserHttpCache(HttpClient);
             _responseTcs = new ConcurrentDictionary<string, TimeoutTaskCompletionSource<BrowserHttpResponse>>();
             _visibleTcs = new ConcurrentBag<TimeoutTaskCompletionSource<bool>>();
         }
 
         static BrowserViewClient()
         {
-            HttpClient = new HttpClient(new Xamarin.Android.Net.AndroidClientHandler
+            Http = BrowserHttpCache.Create(new HttpClient(new Xamarin.Android.Net.AndroidClientHandler
             {
                 ConnectTimeout = TimeSpan.FromSeconds(5),
                 ReadTimeout = TimeSpan.FromSeconds(5),
                 UseCookies = false
-            });
+            }));
         }
 
         #endregion
@@ -90,7 +88,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
-            return CacheAsync(request.Method, request.Url.ToString(), request.RequestHeaders).Result;
+            return RequestAsync(request.Method, request.Url.ToString(), request.RequestHeaders).Result;
         }
 
         #endregion

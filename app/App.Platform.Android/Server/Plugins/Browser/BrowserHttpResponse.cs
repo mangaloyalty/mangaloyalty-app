@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -33,7 +34,7 @@ namespace App.Platform.Android.Server.Plugins.Browser
 
         public WebResourceResponse ToResourceResponse()
         {
-            var statusCode = (int) _statusCode;
+            var statusCode = (int) (_statusCode != HttpStatusCode.NotModified ? _statusCode : HttpStatusCode.OK);
             var statusDescription = _statusCode.ToString();
             var stream = new MemoryStream(_buffer);
             return new WebResourceResponse(_contentType, _contentEncoding, statusCode, statusDescription, _headers, stream);
@@ -46,6 +47,11 @@ namespace App.Platform.Android.Server.Plugins.Browser
         public byte[] Buffer
         {
             get { return _buffer; }
+        }
+
+        public IReadOnlyDictionary<string, string> Headers
+        {
+            get { return new ReadOnlyDictionary<string, string>(_headers); }
         }
 
         #endregion
